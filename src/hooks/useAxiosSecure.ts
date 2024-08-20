@@ -2,7 +2,6 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "./useAuth";
-import axiosInstance from "@/api/axiosInstance";
 import toast from "react-hot-toast";
 
 const axiosSecure = axios.create({
@@ -35,7 +34,7 @@ const useAxiosSecure = () => {
         ) {
           originalRequest._retry = true;
           try {
-            const response = await axiosInstance.post("/auth/refresh-token", {});
+            const response = await axiosSecure.post("/auth/refresh-token", {});
             
             // Check if refresh token response is valid
             if (response && response?.data && response?.data?.data?.accessToken) {

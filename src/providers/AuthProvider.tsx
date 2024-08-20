@@ -20,8 +20,8 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = async (): Promise<boolean> => {
     try {
-      await axiosInstance.post("/auth/logout");
       localStorage.removeItem("token");
+      await axiosInstance.post("/auth/logout",{});
       return true;
     } catch (error) {
       console.log("Logout request failed", error);
