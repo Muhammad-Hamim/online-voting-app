@@ -16,19 +16,19 @@ const UserMenu = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    toast
-      .promise(logout(), {
+  const handleLogout = async () => {
+    try {
+      await toast.promise(logout(), {
         loading: "Logging out...",
         success: "Logout successful!",
         error: (error: any) =>
           error.response?.data?.message || "Logout failed!",
-      })
-      .then((result) => {
-        if (result) {
-          navigate("/");
-        }
       });
+
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
   return (
     <aside
@@ -53,12 +53,12 @@ const UserMenu = () => {
               label="Closed votes"
             />
           </MenuItem>
+          <MenuItem to="positions" icon={GiPodiumWinner} label="Positions" />
           <MenuItem
-            to="positions"
-            icon={GiPodiumWinner}
-            label="Positions"
+            to="voting-history"
+            icon={FaHistory}
+            label="Voting History"
           />
-          <MenuItem to="voting-history" icon={FaHistory} label="Voting History" />
         </ul>
       </div>
       <div className="sticky inset-x-0 bottom-2 px-3 border-t border-gray-300">
