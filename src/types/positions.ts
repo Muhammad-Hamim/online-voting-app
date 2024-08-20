@@ -12,8 +12,9 @@ export type TPosition = {
   maxVotes: number;
   creator: creator;
   maxCandidate: number;
-  applicationDeadline?: string;
-  appliedCandidates: number;
+  startTime: string;
+  endTime?:string;
+  appliedCandidates?: number;
   isDeleted: boolean;
 };
 

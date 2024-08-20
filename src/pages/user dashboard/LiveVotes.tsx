@@ -1,4 +1,4 @@
-import VoteCard from "@/components/my components/VoteCard";
+import LiveVoteCard from "@/components/my components/VoteCard";
 import { useState } from "react";
 import {
   Dialog,
@@ -103,12 +103,14 @@ const LiveVotes = () => {
         {positions && positions.length > 0 ? (
           positions?.map((position, index) => {
             return (
-              <VoteCard
+              <LiveVoteCard
                 key={index}
                 id={position._id}
                 title={position.title}
                 description={position.description}
-                duration={position.duration}
+                startTime={position.startTime}
+                endTime={position.endTime as string}
+                // duration={position.duration}
                 status={position.status}
                 setIsDialogOpen={setIsDialogOpen}
               />

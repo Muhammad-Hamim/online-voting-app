@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
@@ -25,7 +24,7 @@ const Login = () => {
       localStorage.setItem("token", token);
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       navigate("/dashboard"); // Replace with your dashboard route
     },
     onError: (error: any) => {

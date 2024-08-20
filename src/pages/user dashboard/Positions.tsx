@@ -99,8 +99,8 @@ const Positions = () => {
               description={position.description}
               maxCandidates={position.maxCandidate}
               maxVoters={position.maxVotes}
-              appliedCandidates={position.appliedCandidates}
-              deadline={position.applicationDeadline as string}
+              appliedCandidates={position?.appliedCandidates as number}
+              deadline={position.startTime as string}
               setIsDialogOpen={setIsDialogOpen}
               setDialogData={setDialogData}
             />

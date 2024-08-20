@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -8,14 +8,16 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 import useCustomState from "@/hooks/useCustomState";
 
 type Position = {
   id: string;
   title: string;
-  description: string;
-  duration: string; // Expected format: "2h", "3d", "20m"
+  startTime: string;
+  endTime: string;
   status: string;
+  description: string;
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -24,20 +26,6 @@ type TimeLeft = {
   hours: number;
   minutes: number;
   seconds: number;
-};
-
-// Helper function to parse duration string
-const parseDuration = (duration: string): number => {
-  const value = parseInt(duration);
-  if (duration.endsWith("d")) {
-    return value * 24 * 60 * 60 * 1000; // Convert days to milliseconds
-  } else if (duration.endsWith("h")) {
-    return value * 60 * 60 * 1000; // Convert hours to milliseconds
-  } else if (duration.endsWith("m")) {
-    return value * 60 * 1000; // Convert minutes to milliseconds
-  } else {
-    throw new Error("Invalid duration format");
-  }
 };
 
 const calculateTimeLeft = (endTime: number): TimeLeft => {
@@ -56,12 +44,13 @@ const calculateTimeLeft = (endTime: number): TimeLeft => {
   };
 };
 
-const VoteCard = ({
+const LiveVoteCard = ({
   id,
   title,
-  description,
-  duration,
+  startTime,
+  endTime,
   status,
+  description,
   setIsDialogOpen,
 }: Position) => {
   const { setPositionId } = useCustomState();
@@ -71,12 +60,18 @@ const VoteCard = ({
     minutes: 0,
     seconds: 0,
   });
+  const [isVotingAllowed, setIsVotingAllowed] = useState(true);
 
   useEffect(() => {
-    const endTime = new Date().getTime() + parseDuration(duration);
+    const end = new Date(endTime).getTime();
+    const start = new Date(startTime).getTime();
+    if (new Date().getTime() < start) {
+      setIsVotingAllowed(false);
+      return;
+    }
 
     const timer = setInterval(() => {
-      const newTimeLeft = calculateTimeLeft(endTime);
+      const newTimeLeft = calculateTimeLeft(end);
       setTimeLeft(newTimeLeft);
 
       if (
@@ -86,11 +81,22 @@ const VoteCard = ({
         newTimeLeft.seconds <= 0
       ) {
         clearInterval(timer);
+        setIsVotingAllowed(false); // Disable voting after time is up
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [duration]);
+  }, [startTime, endTime]);
+
+  const handleVoteClick = () => {
+    if (!isVotingAllowed) {
+      toast.error("Voting has ended or has not started yet.");
+      return;
+    }
+
+    setIsDialogOpen(true);
+    setPositionId(id);
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto shadow-lg">
@@ -98,7 +104,7 @@ const VoteCard = ({
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-2xl font-bold">{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
+            {description && <CardDescription>{description}</CardDescription>}
           </div>
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -137,11 +143,12 @@ const VoteCard = ({
       </CardContent>
       <CardFooter>
         <Button
-          className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 font-semibold text-lg"
-          onClick={() => {
-            setIsDialogOpen(true);
-            setPositionId(id);
-          }}
+          className={`w-full text-white py-3 rounded-lg ${
+            isVotingAllowed
+              ? "bg-blue-500 hover:bg-blue-600"
+              : "bg-red-500 cursor-not-allowed"
+          } font-semibold text-lg`}
+          onClick={handleVoteClick}
         >
           Vote Now
         </Button>
@@ -150,4 +157,4 @@ const VoteCard = ({
   );
 };
 
-export default VoteCard;
+export default LiveVoteCard;
