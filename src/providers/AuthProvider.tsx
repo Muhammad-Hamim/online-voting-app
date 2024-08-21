@@ -1,12 +1,9 @@
-import React, {
-  createContext,
-} from "react";
+import React, { createContext } from "react";
 import axiosInstance from "@/api/axiosInstance";
 
 // Define the type for the context
 interface AuthContextType {
-  logout: () => Promise<boolean>;
-  
+  logout: () => Promise<boolean | undefined>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -16,23 +13,18 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-
-
-  const logout = async (): Promise<boolean> => {
+  const logout = async (): Promise<boolean | undefined> => {
     try {
       localStorage.removeItem("token");
-      await axiosInstance.post("/auth/logout",{});
-      return true;
+      const response = await axiosInstance.post("/auth/logout", {});
+      return response?.data?.success;
     } catch (error) {
       console.log("Logout request failed", error);
-      return false;
     }
   };
 
   return (
-    <AuthContext.Provider value={{ logout }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ logout }}>{children}</AuthContext.Provider>
   );
 };
 
