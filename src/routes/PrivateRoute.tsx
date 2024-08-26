@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { CirclesWithBar } from "react-loader-spinner";
-import useUserInfo from "@/hooks/useUserInfo";
+import {useUserInfo} from "@/hooks/useUserInfo";
 import toast from "react-hot-toast";
 
 interface PrivateRouteProps {
@@ -21,7 +21,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
 
   if (isLoading || isPending) {
     return (
-      <div className="absolute w-fit h-fit top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute bg-transparent w-fit h-fit top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
         <CirclesWithBar
           height="80"
           width="80"

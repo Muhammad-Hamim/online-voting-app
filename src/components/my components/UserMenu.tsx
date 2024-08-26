@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import useCustomState from "@/hooks/useCustomState";
 import { ChevronDown, LogOutIcon } from "lucide-react";
-import { FaVoteYea, FaHistory } from "react-icons/fa";
+import { FaVoteYea, FaHistory, FaUserAltSlash } from "react-icons/fa";
 import { GiPodiumWinner } from "react-icons/gi";
 import { RiProfileFill } from "react-icons/ri";
 import { MdOutlineArchive } from "react-icons/md";
@@ -10,8 +10,91 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import { useUserInfo } from "@/hooks/useUserInfo";
+
+const menuItems = {
+  user: [
+    {
+      to: "/dashboard",
+      icon: RiProfileFill,
+      label: "Profile",
+    },
+    {
+      icon: FaVoteYea,
+      label: "Votes",
+      subMenu: [
+        {
+          to: "/dashboard/live-votes",
+          icon: GrRadialSelected,
+          label: "Live votes",
+        },
+        {
+          to: "/dashboard/closed-votes",
+          icon: MdOutlineArchive,
+          label: "Closed votes",
+        },
+      ],
+    },
+    {
+      to: "positions",
+      icon: GiPodiumWinner,
+      label: "Positions",
+    },
+    {
+      to: "voting-history",
+      icon: FaHistory,
+      label: "Voting History",
+    },
+  ],
+  admin: [
+    {
+      to: "/admin-dashboard",
+      icon: RiProfileFill,
+      label: "Profile",
+    },
+
+    {
+      icon: FaVoteYea,
+      label: "Votes",
+      subMenu: [
+        {
+          to: "/admin-dashboard/live-votes",
+          icon: GrRadialSelected,
+          label: "Live votes",
+        },
+        {
+          to: "/dashboard/closed-votes",
+          icon: MdOutlineArchive,
+          label: "Closed votes",
+        },
+      ],
+    },
+    {
+      icon: GiPodiumWinner,
+      label: "Positions",
+      subMenu: [
+        {
+          to: "/admin-dashboard/positions/create-position",
+          icon: GrRadialSelected,
+          label: "Create Position",
+        },
+        {
+          to: "/admin-dashboard/positions/manage-positions",
+          icon: GrRadialSelected,
+          label: "Manage Positions",
+        },
+      ],
+    },
+    {
+      icon: FaUserAltSlash,
+      label: "user management",
+      to: "/admin-dashboard/user-management",
+    },
+  ],
+};
 
 const UserMenu = () => {
+  const { user } = useUserInfo();
   const { isSidebarOpen } = useCustomState();
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -30,6 +113,10 @@ const UserMenu = () => {
       console.error("Logout failed", error);
     }
   };
+
+  const currentMenuItems =
+    user?.role === "admin" ? menuItems.admin : menuItems.user;
+
   return (
     <aside
       id="logo-sidebar"
@@ -40,25 +127,9 @@ const UserMenu = () => {
     >
       <div className="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
         <ul className="space-y-2 font-medium">
-          <MenuItem to="/dashboard" icon={RiProfileFill} label="Profile" />
-          <MenuItem icon={FaVoteYea} label="Votes">
-            <SubMenuItem
-              to="/dashboard/live-votes"
-              icon={GrRadialSelected}
-              label="Live votes"
-            />
-            <SubMenuItem
-              to="/dashboard/closed-votes"
-              icon={MdOutlineArchive}
-              label="Closed votes"
-            />
-          </MenuItem>
-          <MenuItem to="positions" icon={GiPodiumWinner} label="Positions" />
-          <MenuItem
-            to="voting-history"
-            icon={FaHistory}
-            label="Voting History"
-          />
+          {currentMenuItems.map((item, index) => (
+            <MenuItem key={index} {...item} />
+          ))}
         </ul>
       </div>
       <div className="sticky inset-x-0 bottom-2 px-3 border-t border-gray-300">
@@ -81,17 +152,22 @@ interface MenuItemProps {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   children?: React.ReactNode;
+  subMenu?: {
+    to: string;
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+  }[];
 }
 
 const MenuItem: React.FC<MenuItemProps> = ({
   to,
   icon: Icon,
   label,
-  children,
+  subMenu,
 }) => {
   return (
     <li>
-      {children ? (
+      {subMenu ? (
         <details className="group [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between rounded-lg p-2 text-gray-900 dark:text-white hover:bg-gray-100 hover:text-gray-700">
             <Icon className="text-gray-900" />
@@ -100,7 +176,11 @@ const MenuItem: React.FC<MenuItemProps> = ({
               <ChevronDown size={20} />
             </span>
           </summary>
-          <ul className="mt-2 space-y-1 px-4">{children}</ul>
+          <ul className="mt-2 space-y-1 px-4">
+            {subMenu.map((subItem, index) => (
+              <SubMenuItem key={index} {...subItem} />
+            ))}
+          </ul>
         </details>
       ) : (
         <Link

@@ -1,7 +1,7 @@
 import useCustomState from "@/hooks/useCustomState";
 import { Sling as Hamburger } from "hamburger-react";
 import { Link } from "react-router-dom";
-import useUserInfo from "@/hooks/useUserInfo";
+import {useUserInfo} from "@/hooks/useUserInfo";
 const Navbar = () => {
   const { user} = useUserInfo();
   const { isSidebarOpen, setIsSidebarOpen } = useCustomState();

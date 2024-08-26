@@ -3,6 +3,11 @@ import { Link } from "react-router-dom";
 import { SVGProps } from "react";
 
 const NotFound = () => {
+  // Handler for going back to the previous page
+  const handleGoBack = () => {
+    window.history.back();
+  };
+
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-[#0a0a0a] px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-md text-center">
@@ -27,6 +32,14 @@ const NotFound = () => {
               <PowerIcon className="mr-2 h-5 w-5" />
               Back to Homepage
             </Link>
+            <Button
+              variant="destructive"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-[#ff4d4d] px-6 text-sm font-medium text-[#0a0a0a] shadow-lg transition-colors hover:bg-[#ff6b6b] focus:outline-none focus:ring-2 focus:ring-[#ff4d4d] focus:ring-offset-2"
+              onClick={handleGoBack} // Attach the click handler
+            >
+              <TriangleAlertIcon className="mr-2 h-5 w-5" />
+              Go Back
+            </Button>
             <Button
               variant="destructive"
               className="inline-flex h-12 items-center justify-center rounded-full bg-[#ff4d4d] px-6 text-sm font-medium text-[#0a0a0a] shadow-lg transition-colors hover:bg-[#ff6b6b] focus:outline-none focus:ring-2 focus:ring-[#ff4d4d] focus:ring-offset-2"

@@ -11,25 +11,27 @@ import {
 import { Label } from "@radix-ui/react-label";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {usePositions} from "@/hooks/usePositions";
+import { useAllPositions } from "@/hooks/usePositions";
 import { CirclesWithBar } from "react-loader-spinner";
-import {
-  ErrorResponse,
-  TPosition,
-} from "@/types/positions";
+import { ErrorResponse } from "@/types/positions";
 import { Textarea } from "@/components/ui/textarea";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
-import useUserInfo from "@/hooks/useUserInfo";
+import { useUserInfo } from "@/hooks/useUserInfo";
 import { TCandidateApplication } from "@/types/candidates";
 
 const Positions = () => {
   const [axiosSecure] = useAxiosSecure();
   const { user } = useUserInfo();
-  const { pendingPositions: positions, isLoading, isPending, refetch } = usePositions();
+  const {
+    pendingPositions: positions,
+    isLoading,
+    isPending,
+    refetch,
+  } = useAllPositions();
   const [dialogData, setDialogData] = useState<{ id: string }>({
     id: "null",
   });
@@ -91,15 +93,15 @@ const Positions = () => {
     <>
       <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {positions && positions.length > 0 ? (
-          positions?.map((position: TPosition, index: number) => (
+          positions?.map((position, index: number) => (
             <PositionCard
               key={index}
-              id={position._id}
-              title={position.title}
-              description={position.description}
-              maxCandidates={position.maxCandidate}
-              maxVoters={position.maxVotes}
-              appliedCandidates={position?.appliedCandidates as number}
+              id={position._id as string}
+              title={position.title as string}
+              description={position.description as string}
+              maxCandidates={position.maxCandidate as number}
+              maxVoters={position.maxVotes as number}
+              appliedCandidates={position?.candidates?.length as number}
               deadline={position.startTime as string}
               setIsDialogOpen={setIsDialogOpen}
               setDialogData={setDialogData}

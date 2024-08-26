@@ -36,7 +36,6 @@ const useAxiosSecure = () => {
           try {
             const response = await axiosSecure.post("/auth/refresh-token", {});
             // Check if refresh token response is valid
-            console.log(response);
             if (response && response?.data && response?.data?.data?.accessToken) {
               const newAccessToken = response?.data?.data?.accessToken;
               localStorage.setItem("token", newAccessToken);

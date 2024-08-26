@@ -31,13 +31,18 @@ const CandidateCard: FC<CandidateCardProps> = ({
   return (
     <Card
       className={clsx(
-        "min-h-fit p-3 rounded-lg cursor-pointer shadow-lg transition-all duration-200",
-        isSelected ? "bg-green-100" : "bg-white"
+        "min-h-fit p-4 rounded-lg cursor-pointer shadow-lg transition-all duration-200",
+        isSelected
+          ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+          : "bg-white text-gray-900 relative"
       )}
       onClick={() => setSelectedCandidate(id)}
     >
-      <CardContent className="p-0 flex items-center gap-2">
-        <div className="w-14 h-14 rounded-full overflow-hidden shadow-md">
+      {!isSelected && (
+        <div className="absolute top-0 left-0 bg-gradient-to-r to-indigo-500 from-purple-500 h-2 w-full rounded-t-xl"></div>
+      )}
+      <CardContent className="p-0 flex items-center gap-4">
+        <div className="w-16 h-16 rounded-full overflow-hidden shadow-md">
           <img
             src={photoUrl}
             alt={name}
@@ -45,16 +50,23 @@ const CandidateCard: FC<CandidateCardProps> = ({
           />
         </div>
         <div>
-          <CardTitle className="text-xl font-semibold text-gray-900">
-            {name}
-          </CardTitle>
-          <CardDescription className="text-sm text-gray-800">
+          <CardTitle className="text-lg font-semibold">{name}</CardTitle>
+          <CardDescription
+            className={`${isSelected ? "text-white" : ""}"text-sm"`}
+          >
             {email}
           </CardDescription>
         </div>
       </CardContent>
       <CardFooter className="p-0 pt-2">
-        <p className="text-sm text-gray-700 italic">"{message}"</p>
+        <p
+          className={clsx(
+            "text-sm italic",
+            isSelected ? "text-white" : "text-gray-700"
+          )}
+        >
+          "{message}"
+        </p>
       </CardFooter>
     </Card>
   );

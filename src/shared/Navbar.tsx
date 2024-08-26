@@ -10,7 +10,7 @@ const Navbar: React.FC = () => {
         </div>
       </Link>
       <Link
-        to={"/"}
+        to={"/admin-login"}
         className="bg-white text-[#1F3D7A] hover:bg-[#2a4e9b] hover:text-white px-4 py-2 rounded-full transition-colors"
       >
         Admin Login

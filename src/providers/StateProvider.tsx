@@ -13,6 +13,12 @@ interface StateContextType {
   toggleSidebar: () => void;
   positionId: string | null;
   setPositionId: Dispatch<SetStateAction<string | null>>;
+  mpPositionId: string | boolean;
+  setMpPositionId: Dispatch<SetStateAction<string | boolean>>;
+  mpCandidateId: string | null;
+  setMpCandidateId: Dispatch<SetStateAction<string | null>>;
+  mpCreatorId: string | null;
+  setMpCreatorId: Dispatch<SetStateAction<string | null>>;
 }
 
 // Create the context with the defined type
@@ -30,6 +36,9 @@ const StateProvider: React.FC<StateProviderProps> = ({ children }) => {
     setIsSidebarOpen((prevState) => !prevState);
   };
   const [positionId, setPositionId] = useState<string | null>(null);
+  const [mpPositionId, setMpPositionId] = useState<string | boolean>(false);
+  const [mpCandidateId, setMpCandidateId] = useState<string | null>(null);
+  const [mpCreatorId, setMpCreatorId] = useState<string | null>(null);
   return (
     <StateContext.Provider
       value={{
@@ -38,6 +47,12 @@ const StateProvider: React.FC<StateProviderProps> = ({ children }) => {
         toggleSidebar,
         positionId,
         setPositionId,
+        mpPositionId,
+        setMpPositionId,
+        mpCandidateId,
+        setMpCandidateId,
+        mpCreatorId,
+        setMpCreatorId,
       }}
     >
       {children}

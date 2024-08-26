@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { motion } from "framer-motion";
 import {
   Card,
   CardHeader,
@@ -10,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import useCustomState from "@/hooks/useCustomState";
+import useTimer from "@/hooks/useTimer";
+import { Vote } from "lucide-react";
 
 type Position = {
   id: string;
@@ -18,30 +21,7 @@ type Position = {
   endTime: string;
   status: string;
   description: string;
-  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-};
-
-type TimeLeft = {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-};
-
-const calculateTimeLeft = (endTime: number): TimeLeft => {
-  const total = endTime - new Date().getTime();
-
-  const daysLeft = Math.floor(total / (1000 * 60 * 60 * 24));
-  const hoursLeft = Math.floor((total / (1000 * 60 * 60)) % 24);
-  const minutesLeft = Math.floor((total / (1000 * 60)) % 60);
-  const secondsLeft = Math.floor((total / 1000) % 60);
-
-  return {
-    days: daysLeft,
-    hours: hoursLeft,
-    minutes: minutesLeft,
-    seconds: secondsLeft,
-  };
+  setIsDialogOpen: () => void;
 };
 
 const LiveVoteCard = ({
@@ -54,106 +34,81 @@ const LiveVoteCard = ({
   setIsDialogOpen,
 }: Position) => {
   const { setPositionId } = useCustomState();
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-  const [isVotingAllowed, setIsVotingAllowed] = useState(true);
-
-  useEffect(() => {
-    const end = new Date(endTime).getTime();
-    const start = new Date(startTime).getTime();
-    if (new Date().getTime() < start) {
-      setIsVotingAllowed(false);
-      return;
-    }
-
-    const timer = setInterval(() => {
-      const newTimeLeft = calculateTimeLeft(end);
-      setTimeLeft(newTimeLeft);
-
-      if (
-        newTimeLeft.days <= 0 &&
-        newTimeLeft.hours <= 0 &&
-        newTimeLeft.minutes <= 0 &&
-        newTimeLeft.seconds <= 0
-      ) {
-        clearInterval(timer);
-        setIsVotingAllowed(false); // Disable voting after time is up
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [startTime, endTime]);
+  const { timeLeft, isVotingAllowed } = useTimer(startTime, endTime);
 
   const handleVoteClick = () => {
     if (!isVotingAllowed) {
       toast.error("Voting has ended or has not started yet.");
       return;
     }
-
     setIsDialogOpen(true);
     setPositionId(id);
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-2xl font-bold">{title}</CardTitle>
-            {description && <CardDescription>{description}</CardDescription>}
-          </div>
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              status === "live"
-                ? "bg-green-500 text-white"
-                : "bg-red-500 text-white"
-            }`}
-          >
-            {status}
-          </span>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center">
-        <p className="text-sm font-semibold mb-2">Time Left</p>
-        <div className="flex space-x-2 text-lg font-mono">
-          <div className="bg-gray-200 p-3 rounded-lg">
-            {String(timeLeft.days).padStart(2, "0")}
-            <span className="text-xs">d</span>
-          </div>
-          <span className="text-2xl">:</span>
-          <div className="bg-gray-200 p-3 rounded-lg">
-            {String(timeLeft.hours).padStart(2, "0")}
-            <span className="text-xs">h</span>
-          </div>
-          <span className="text-2xl">:</span>
-          <div className="bg-gray-200 p-3 rounded-lg">
-            {String(timeLeft.minutes).padStart(2, "0")}
-            <span className="text-xs">m</span>
-          </div>
-          <span className="text-2xl">:</span>
-          <div className="bg-gray-200 p-3 rounded-lg">
-            {String(timeLeft.seconds).padStart(2, "0")}
-            <span className="text-xs">s</span>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button
-          className={`w-full text-white py-3 rounded-lg ${
-            isVotingAllowed
-              ? "bg-blue-500 hover:bg-blue-600"
-              : "bg-red-500 cursor-not-allowed"
-          } font-semibold text-lg`}
-          onClick={handleVoteClick}
-        >
-          Vote Now
-        </Button>
-      </CardFooter>
-    </Card>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md mx-auto"
+      >
+        <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-gray-200 to-gray-300 rounded-bl-full opacity-20 z-0"></div>
+          <CardHeader className="relative z-10 pb-0">
+            <div className="absolute top-4 right-4">
+              <motion.span
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.3, repeat: Infinity, repeatType: "reverse" }}
+                className={`px-4 py-2 rounded-full text-sm font-bold ${
+                  status === "live"
+                    ? "bg-green-500 text-white"
+                    : "bg-red-500 text-white"
+                }`}
+              >
+                {status}
+              </motion.span>
+            </div>
+            <CardTitle className="text-3xl font-extrabold text-gray-800 mb-2">{title}</CardTitle>
+            {description && <CardDescription className="text-gray-600">{description}</CardDescription>}
+          </CardHeader>
+          <CardContent className="pt-6 relative z-10">
+            <div className="bg-white bg-opacity-70 backdrop-blur-sm rounded-xl p-6 shadow-inner">
+              <p className="text-sm font-semibold mb-4 text-center text-gray-700">Time Remaining</p>
+              <div className="flex justify-center space-x-4 text-lg font-mono">
+                {Object.entries(timeLeft).map(([unit, value], index) => (
+                  <React.Fragment key={unit}>
+                    <motion.div
+                      className="bg-gradient-to-br from-gray-600 to-gray-700 p-4 rounded-xl text-white shadow-md flex flex-col items-center"
+                      initial={{ rotateY: 0 }}
+                      animate={{ rotateY: 360 }}
+                      transition={{ duration: 0.5, delay: index * 0.1, repeat: Infinity, repeatDelay: 20 }}
+                    >
+                      <span className="text-2xl font-bold">{String(value).padStart(2, "0")}</span>
+                      <span className="text-xs mt-1">{unit}</span>
+                    </motion.div>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-6 pb-8 relative z-10">
+            <Button
+              className={`w-full py-4 rounded-full text-white font-bold text-lg transition-all duration-300 ${
+                isVotingAllowed
+                  ? "bg-gray-800 hover:bg-gray-900 transform hover:-translate-y-1 hover:shadow-xl"
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+              onClick={handleVoteClick}
+              disabled={!isVotingAllowed}
+            >
+              <Vote className="mr-2 h-6 w-6" /> Cast Your Vote
+            </Button>
+          </CardFooter>
+        </Card>
+      </motion.div>
+    </>
   );
 };
 

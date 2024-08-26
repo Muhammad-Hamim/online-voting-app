@@ -6,11 +6,12 @@ export type TUserData = {
   email: string;
   studentId: string;
   photo: string;
-  role: string;
+  role: "user" | "admin" | "superAdmin";
+  status?: "pending" | "active" | "blocked";
   isDeleted: boolean;
-  passwordChangedAt?:string;
+  passwordChangedAt?: string;
+  lastLogin?: string;
   createdAt: string; // Can also use Date
   updatedAt: string; // Can also use Date
-  status: string;
   __v: number;
 };

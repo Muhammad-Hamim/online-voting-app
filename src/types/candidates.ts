@@ -1,8 +1,9 @@
+import { TPosition } from "./positions";
 import { TUserData } from "./User";
 
 export type TCandidate = {
   _id: string;
-  candidate: Partial<TUserData>;
+  candidate?: Partial<TUserData>;
   email: string;
   position: string;
   votes: number;
@@ -16,3 +17,9 @@ export type TCandidateApplication = {
   position: string;
   message: string;
 };
+
+export interface IAppliedPositions extends TCandidate {
+  positionDetails: Partial<TPosition>;
+  creator: Partial<TUserData>;
+  voters: Partial<TUserData>[];
+}

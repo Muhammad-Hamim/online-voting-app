@@ -1,11 +1,11 @@
 import useAxiosSecure from "./useAxiosSecure";
-import useUserInfo from "./useUserInfo";
+import {useUserInfo} from "./useUserInfo";
 import { useQuery } from "@tanstack/react-query";
 import { TVotingRecord } from "@/types/vote";
 import toast from "react-hot-toast";
 
 const useGetMyVotes = () => {
-  const { user } = useUserInfo();
+  const { user, isLoading: isUserLoading } = useUserInfo();
   const [axiosSecure] = useAxiosSecure();
   const {
     data: myVotes,
@@ -25,7 +25,7 @@ const useGetMyVotes = () => {
         throw error;
       }
     },
-    enabled: !!user,
+    enabled: !isUserLoading && !!user?.email,
     retry: false, // Optional: Disable automatic retries
   });
   return {
