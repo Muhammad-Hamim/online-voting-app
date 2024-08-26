@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import useAxiosSecure from "./useAxiosSecure";
 import toast from "react-hot-toast";
-import { IPosition, TPosition } from "@/types/positions";
+import { ErrorResponse, IPosition, TPosition } from "@/types/positions";
 import { useUserInfo } from "./useUserInfo";
 
 // Helper function to fetch positions
@@ -17,10 +17,45 @@ const fetchPositions = async (axiosSecure: any, endpoint: string) => {
   }
 };
 
+const useUpdatePositionInfo = () => {
+  const queryClient = useQueryClient();
+  const [axiosSecure] = useAxiosSecure();
+  const { refetch } = useAllPositions("");
+  const updatePositionMutation = useMutation({
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Partial<IPosition & TPosition>;
+    }): Promise<Record<string, unknown>> => {
+      const response = await axiosSecure.patch(
+        `/positions/update-position/${id}`,
+        payload
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Position updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["positions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["positions-with-candidates"],
+      });
+      refetch();
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      toast.error(`${error.response?.data?.message}`);
+    },
+  });
+
+  return { updatePositionMutation };
+};
+
 // Hook for updating the position status
 const useUpdatePositionStatus = () => {
   const queryClient = useQueryClient();
   const [axiosSecure] = useAxiosSecure();
+  const { refetch } = useAllPositions("");
   // Mutation for updating position status
   const mutation = useMutation({
     mutationFn: async ({
@@ -46,33 +81,15 @@ const useUpdatePositionStatus = () => {
       queryClient.invalidateQueries({
         queryKey: ["positions-with-candidates"],
       });
+      refetch();
     },
-    onError: (error: AxiosError) => {
-      toast.error(`Error updating position status: ${error.message}`);
+    onError: (error: AxiosError<ErrorResponse>) => {
+      toast.error(`${error.response?.data?.message}`);
     },
   });
 
-  const checkAndUpdatePositionStatus = (position: TPosition) => {
-    const currentTime = new Date().getTime();
-
-    if (
-      position.endTime &&
-      new Date(position.endTime).getTime() <= currentTime &&
-      position.status === "live"
-    ) {
-      mutation.mutate({ id: position._id, status: "closed" });
-    } else if (
-      position.startTime &&
-      new Date(position.startTime).getTime() <= currentTime &&
-      position.status === "pending"
-    ) {
-      mutation.mutate({ id: position._id, status: "live" });
-    }
-  };
-
   return {
     mutation,
-    checkAndUpdatePositionStatus,
   };
 };
 
@@ -88,7 +105,7 @@ const usePositions = (endpoint: string, queryKey: string) => {
     isPending,
     isError,
     refetch,
-  } = useQuery<TPosition[] & IPosition[], Error>({
+  } = useQuery<IPosition[] & TPosition[], Error>({
     queryKey: [queryKey],
     queryFn: () => fetchPositions(axiosSecure, endpoint),
     enabled: !!user,
@@ -108,7 +125,7 @@ const usePositions = (endpoint: string, queryKey: string) => {
 // Hook for positions with candidates
 const useGetPositionsWithCandidates = () => {
   const { positions, ...rest } = usePositions(
-    "/positions/get-positions-with-candidates",
+    "/positions/get-positions-with-candidates?sort=-createdAt",
     "positions-with-candidates"
   );
 
@@ -155,4 +172,5 @@ export {
   useAllPositions,
   useGetPositionsWithCandidates,
   useUpdatePositionStatus,
+  useUpdatePositionInfo,
 };

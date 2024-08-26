@@ -17,6 +17,8 @@ import { useMutation } from "@tanstack/react-query";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import toast from "react-hot-toast";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { AxiosError } from "axios";
+import { ErrorResponse } from "@/types/positions";
 
 interface IPosition {
   title: string;
@@ -30,7 +32,7 @@ interface IPosition {
 
 const CreatePosition = () => {
   const [axiosSecure] = useAxiosSecure();
-  const { user, isLoading } = useUserInfo();
+  const { user } = useUserInfo();
   const {
     control,
     handleSubmit,
@@ -50,8 +52,8 @@ const CreatePosition = () => {
     onSuccess: () => {
       resetForm();
     },
-    onError: (err) => {
-      toast.error(err?.response.data.message);
+    onError: (err: AxiosError<ErrorResponse>) => {
+      toast.error(err?.response?.data?.message as string);
     },
   });
 

@@ -15,11 +15,20 @@ import { IPosition, TPosition } from "@/types/positions";
 import { Textarea } from "../ui/textarea";
 import moment from "moment";
 import toast from "react-hot-toast";
+import { Dispatch, SetStateAction } from "react";
+import { useUpdatePositionInfo } from "@/hooks/usePositions";
+type TUpdatePosition = {
+  open: boolean;
+  onOpenChange: Dispatch<SetStateAction<boolean>>;
+  position: IPosition & TPosition;
+};
+
 const MPUpdatePositionDialog = ({
+  open,
+  onOpenChange,
   position,
-}: {
-  position: TPosition & IPosition;
-}) => {
+}: TUpdatePosition) => {
+  const { updatePositionMutation } = useUpdatePositionInfo();
   const {
     control,
     handleSubmit,
@@ -31,10 +40,17 @@ const MPUpdatePositionDialog = ({
       return toast.error("You can only update a pending position.");
     }
     console.log(data);
+    if (data.startTime) {
+      data.startTime = moment(data.startTime).format();
+    }
+    if (data.endTime) {
+      data.endTime = moment(data.endTime).format();
+    }
     // Implement position update logic here
+    updatePositionMutation.mutate({ id: position._id, payload: data });
   };
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild></DialogTrigger>{" "}
       <DialogContent className="md:max-w-[60vw] lg:max-w-[45vw]">
         <DialogHeader>
@@ -79,7 +95,7 @@ const MPUpdatePositionDialog = ({
               <div className="space-y-2">
                 <Label>Start Time</Label>
                 <Controller
-                  name="startDate"
+                  name="startTime"
                   control={control}
                   rules={{}}
                   render={({ field }) => (
@@ -93,16 +109,16 @@ const MPUpdatePositionDialog = ({
                     />
                   )}
                 />
-                {errors.startDate && (
+                {errors.startTime && (
                   <p className="text-red-500 text-sm">
-                    {errors?.startDate?.message as string}
+                    {errors?.startTime?.message as string}
                   </p>
                 )}
               </div>
               <div className="space-y-2">
                 <Label>End Time</Label>
                 <Controller
-                  name="endDate"
+                  name="endTime"
                   control={control}
                   rules={{}}
                   render={({ field }) => (
@@ -116,9 +132,9 @@ const MPUpdatePositionDialog = ({
                     />
                   )}
                 />
-                {errors.endDate && (
+                {errors.endTime && (
                   <p className="text-red-500 text-sm">
-                    {errors.endDate.message as string}
+                    {errors.endTime.message as string}
                   </p>
                 )}
               </div>

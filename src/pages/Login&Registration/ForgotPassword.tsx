@@ -2,7 +2,9 @@
 import axiosInstance from "@/api/axiosInstance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ErrorResponse } from "@/types/positions";
 import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
@@ -39,7 +41,7 @@ const ForgotPassword = () => {
         </span>
       ));
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
         error.response?.data?.message || "Failed to send reset email!"
       );

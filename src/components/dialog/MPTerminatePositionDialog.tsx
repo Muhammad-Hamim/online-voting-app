@@ -10,11 +10,20 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useUpdatePositionStatus } from "@/hooks/usePositions";
 import toast from "react-hot-toast";
-import { useState } from "react";
-import useCustomState from "@/hooks/useCustomState";
-const MPTerminatePositionDialog = () => {
+import { Dispatch, SetStateAction, useState } from "react";
+
+type TTerminatePosition = {
+  open: boolean;
+  onOpenChange: Dispatch<SetStateAction<boolean>>;
+  id: string;
+};
+
+const MPTerminatePositionDialog = ({
+  open,
+  onOpenChange,
+  id,
+}: TTerminatePosition) => {
   const { mutation: updateStatusMutation } = useUpdatePositionStatus();
-  const { mpPositionId, setMpPositionId } = useCustomState();
   const [terminationMessage, setTerminationMessage] = useState<string>("");
   const handleUpdateStatus = (positionId: string, newStatus: string) => {
     const payload = {
@@ -28,7 +37,6 @@ const MPTerminatePositionDialog = () => {
       onSuccess: () => {
         toast.success(`Position ${newStatus} successfully`);
         setTerminationMessage("");
-        setMpPositionId(false);
       },
       onError: () => {
         toast.error(`Failed to ${newStatus} position`);
@@ -36,7 +44,7 @@ const MPTerminatePositionDialog = () => {
     });
   };
   return (
-    <Dialog open={mpPositionId as boolean} onOpenChange={setMpPositionId}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Terminate Position</DialogTitle>
@@ -52,9 +60,7 @@ const MPTerminatePositionDialog = () => {
         />
         <DialogFooter>
           <Button
-            onClick={() =>
-              handleUpdateStatus(mpPositionId as string, "terminated")
-            }
+            onClick={() => handleUpdateStatus(id, "terminated")}
             className="w-full mt-4"
           >
             Confirm Termination

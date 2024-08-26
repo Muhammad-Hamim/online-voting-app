@@ -58,7 +58,7 @@ const UserManagement = () => {
   // Debounce refetch function
   const debouncedRefetch = debounce(() => {
     refetch();
-  }, 1500);
+  }, 5000);
 
   const onSearchSubmit: SubmitHandler<{ searchTerm: string }> = (data) => {
     setSearchTerm(data.searchTerm);
@@ -81,8 +81,8 @@ const UserManagement = () => {
       refetch();
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-    onError: (error) => {
-      console.error("Error updating user:", error);
+    onError: (error: AxiosError<ErrorResponse>) => {
+      console.error(error?.response?.data?.message);
     },
   });
 

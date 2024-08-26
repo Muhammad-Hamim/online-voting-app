@@ -65,7 +65,7 @@ const ClosedVotes = () => {
               id={position._id}
               title={position.title}
               description={position.description}
-              winner={position.winner as ICandidate}
+              winner={position?.winner as ICandidate}
               setIsDialogOpen={setIsDialogOpen}
               setPositionId={setPositionId}
             />
@@ -101,7 +101,7 @@ const ClosedVotes = () => {
                           alt={candidate.name}
                         />
                         <AvatarFallback>
-                          {candidate.name.charAt(0)}
+                          {candidate.name}
                         </AvatarFallback>
                       </Avatar>
                       <Badge

@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 import axiosInstance from "@/api/axiosInstance";
 import { Link, useNavigate } from "react-router-dom";
 import profilePhoto from "@/assets/profile/profile.jpg";
+import { AxiosError } from "axios";
+import { ErrorResponse } from "@/types/positions";
 
 type Inputs = {
   name: string;
@@ -36,19 +38,19 @@ const Registration: React.FC = () => {
     onSuccess: () => {
       navigate("/");
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Registration failed!");
-    },
   });
 
   const handleRegistration: SubmitHandler<Inputs> = (data) => {
     const formData = new FormData();
     // Append user data as a JSON string
-    formData.append("data", JSON.stringify({
-      name: data.name,
-      email: data.email,
-      studentId: data.studentId
-    }));
+    formData.append(
+      "data",
+      JSON.stringify({
+        name: data.name,
+        email: data.email,
+        studentId: data.studentId,
+      })
+    );
     // Append photo file if it exists
     if (data.photo && data.photo[0]) {
       formData.append("photo", data.photo[0]);
@@ -57,7 +59,7 @@ const Registration: React.FC = () => {
     toast.promise(registrationMutation.mutateAsync(formData), {
       loading: "Registering...",
       success: "Registration successful! Please check your email for password.",
-      error: (error: any) =>
+      error: (error: AxiosError<ErrorResponse>) =>
         error.response?.data?.message || "Registration failed!",
     });
   };

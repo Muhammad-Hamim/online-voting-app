@@ -18,6 +18,9 @@ const useAxiosSecure = () => {
       const token = localStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        logout();
+        navigate("/");
       }
       return config;
     });
@@ -27,37 +30,34 @@ const useAxiosSecure = () => {
       async (error) => {
         const originalRequest = error.config;
 
-        if (
-          error.response &&
-          (error.response.status === 401 || error.response.status === 500) &&
-          !originalRequest._retry
-        ) {
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
+
           try {
             const response = await axiosSecure.post("/auth/refresh-token", {});
-            // Check if refresh token response is valid
-            if (response && response?.data && response?.data?.data?.accessToken) {
-              const newAccessToken = response?.data?.data?.accessToken;
+            if (response?.data?.data?.accessToken) {
+              const newAccessToken = response.data.data.accessToken;
               localStorage.setItem("token", newAccessToken);
               originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-              
+
               // Retry the original request with the new token
               return axiosSecure(originalRequest);
-            } else {
-              // If the refresh token is invalid or expired, show a toast and logout the user
-              toast.error("Session expired. Please log in again.");
-              await logout();
-              navigate("/");
-              return Promise.reject(error);
             }
           } catch (refreshError) {
-            // Handle cases where the refresh token request fails
             console.error("Token refresh failed:", refreshError);
-            toast.error("Session expired. Please log in again.");
-            await logout();
-            navigate("/");
-            return Promise.reject(refreshError);
           }
+
+          // If refresh failed, log out the user and redirect to login
+          toast.error("Session expired. Please log in again.");
+          await logout();
+          navigate("/");
+          return Promise.reject(error);
+        }
+
+        // Handle other errors, such as 500 Internal Server Error
+        if (error.response && error.response.status === 500) {
+          toast.error("An internal server error occurred. Please try again later.");
+          return Promise.reject(error);
         }
 
         return Promise.reject(error);

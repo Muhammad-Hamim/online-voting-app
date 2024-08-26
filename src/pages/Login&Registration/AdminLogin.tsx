@@ -6,6 +6,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import axiosInstance from "@/api/axiosInstance";
+import { AxiosError } from "axios";
+import { ErrorResponse } from "@/types/positions";
 
 type Inputs = { email: string; password: string };
 
@@ -27,16 +29,14 @@ const Login = () => {
     onSuccess: () => {
       navigate("/dashboard"); // Replace with your dashboard route
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Login failed!");
-    },
   });
 
   const handleLogin: SubmitHandler<Inputs> = (data) => {
     toast.promise(loginMutation.mutateAsync(data), {
       loading: "Logging in...",
       success: "Login successful!",
-      error: (error: any) => error.response?.data?.message || "Login failed!",
+      error: (error: AxiosError<ErrorResponse>) =>
+        error.response?.data?.message || "Login failed!",
     });
   };
 

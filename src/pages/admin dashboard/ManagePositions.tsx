@@ -1,19 +1,14 @@
-import { useState, ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import { Input } from "@/components/ui/input";
-
 import { useAllPositions } from "@/hooks/usePositions";
-
-import { CirclesWithBar } from "react-loader-spinner";
-import "react-datepicker/dist/react-datepicker.css";
-import { debounce } from "lodash";
 import { IPosition, TPosition } from "@/types/positions";
 
 import ManagePositionsCard from "@/components/my components/ManagePositionsCard";
-import MPTerminatePositionDialog from "@/components/dialog/MPTerminatePositionDialog";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { Loader2 } from "lucide-react";
 
 const PositionStats = ({
   positions,
@@ -22,18 +17,17 @@ const PositionStats = ({
 }) => {
   const getCounts = () => {
     const counts = {
-      all: positions.length,
+      all: positions?.length,
       live: 0,
       pending: 0,
       terminated: 0,
       closed: 0,
     };
-    positions.forEach((position) => {
+    positions?.forEach((position) => {
       counts[position.status]++;
     });
     return counts;
   };
-
   const counts = getCounts();
 
   return (
@@ -54,36 +48,33 @@ const PositionStats = ({
   );
 };
 
+type TSearchInput = {
+  searchTerm: string;
+};
+
 const ManagePositions = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [isSearching, setIsSearching] = useState(false);
   const { positions, isLoading, refetch } = useAllPositions(searchTerm);
 
-  // Debounce refetch function
-  const debouncedRefetch = debounce(() => {
-    refetch(); // Assuming refetch is defined and returns a Promise or similar
-  }, 300);
+  const { register, handleSubmit } = useForm();
 
-  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    debouncedRefetch();
+  useEffect(() => {
+    if (searchTerm) {
+      setIsSearching(true);
+      const timer = setTimeout(() => {
+        refetch().then(() => setIsSearching(false));
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      refetch();
+      setIsSearching(false);
+    }
+  }, [searchTerm, refetch]);
+
+  const onSearchSubmit: SubmitHandler<TSearchInput> = (data) => {
+    setSearchTerm(data?.searchTerm);
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <CirclesWithBar
-          height="80"
-          width="80"
-          color="#4fa94d"
-          outerCircleColor="#4fa94d"
-          innerCircleColor="#4fa94d"
-          barColor="#4fa94d"
-          ariaLabel="circles-with-bar-loading"
-          visible={true}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-8">
@@ -99,13 +90,39 @@ const ManagePositions = () => {
       <PositionStats positions={positions as TPosition[] & IPosition[]} />
 
       <div className="mb-6">
-        <Input
-          type="text"
-          placeholder="Search positions..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="w-full"
-        />
+        <form
+          onChange={handleSubmit(onSearchSubmit)}
+          className="w-full md:w-1/2"
+        >
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Search positions..."
+              {...register("searchTerm")}
+              className="w-full pl-10 pr-4 py-2 rounded-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+            />
+            <button
+              type="submit"
+              className="absolute inset-y-0 left-0 pl-3 flex items-center"
+            >
+              {isSearching ? (
+                <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
+              ) : (
+                <svg
+                  className="h-5 w-5 text-gray-400"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
 
       <Tabs defaultValue="all" className="w-full">
@@ -116,28 +133,33 @@ const ManagePositions = () => {
           <TabsTrigger value="terminated">Terminated</TabsTrigger>
           <TabsTrigger value="closed">Closed</TabsTrigger>
         </TabsList>
-        {["all", "live", "pending", "terminated", "closed"].map((status) => (
-          <TabsContent key={status} value={status}>
-            <div className="grid gap-6 md:grid-cols-2 xxl:grid-cols-3">
-              {positions
-                ?.filter(
-                  (position) => status === "all" || position.status === status
-                )
-                ?.map((position) => {
-                  return (
-                    <>
-                      <ManagePositionsCard
-                        key={position._id}
-                        position={position as TPosition & IPosition}
-                      />
-                    </>
-                  );
-                })}
-            </div>
-          </TabsContent>
-        ))}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-10">
+            <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+          </div>
+        ) : (
+          ["all", "live", "pending", "terminated", "closed"].map((status) => (
+            <TabsContent key={status} value={status}>
+              <div className="grid gap-6 md:grid-cols-2 xxl:grid-cols-3">
+                {positions
+                  ?.filter(
+                    (position) => status === "all" || position.status === status
+                  )
+                  ?.map((position) => {
+                    return (
+                      <>
+                        <ManagePositionsCard
+                          key={position._id}
+                          position={position as TPosition & IPosition}
+                        />
+                      </>
+                    );
+                  })}
+              </div>
+            </TabsContent>
+          ))
+        )}
       </Tabs>
-      <MPTerminatePositionDialog />
     </div>
   );
 };

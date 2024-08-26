@@ -16,6 +16,7 @@ interface StateContextType {
   mpPositionId: string | boolean;
   setMpPositionId: Dispatch<SetStateAction<string | boolean>>;
   mpCandidateId: string | null;
+  
   setMpCandidateId: Dispatch<SetStateAction<string | null>>;
   mpCreatorId: string | null;
   setMpCreatorId: Dispatch<SetStateAction<string | null>>;

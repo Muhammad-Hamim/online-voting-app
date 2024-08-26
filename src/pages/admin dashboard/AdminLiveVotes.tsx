@@ -54,12 +54,7 @@ const AdminLiveVotes = () => {
               livePositions.map((position) => (
                 <AdminLiveVoteCard
                   key={position._id}
-                  id={position?._id as string}
-                  title={position?.title as string}
-                  description={position?.description as string}
-                  startTime={position?.startTime as string}
-                  endTime={position?.endTime as string}
-                  status={position?.status as string}
+                  position={position}
                   setIsDialogOpen={setIsDialogOpen}
                 />
               ))
@@ -70,12 +65,7 @@ const AdminLiveVotes = () => {
               notStartedOrExpiredPositions.map((position) => (
                 <AdminLiveVoteCard
                   key={position._id}
-                  id={position?._id as string}
-                  title={position?.title as string}
-                  description={position?.description as string}
-                  startTime={position?.startTime as string}
-                  endTime={position?.endTime as string}
-                  status={position?.status as string}
+                  position={position}
                   setIsDialogOpen={setIsDialogOpen}
                 />
               ))

@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
-import moment from "moment"; // Import moment
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import React, { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
+import moment from "moment"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { ChevronDown, ChevronUp, Mail, MessageCircle, User } from "lucide-react"
 import {
   PieChart,
   Pie,
@@ -18,17 +20,16 @@ import {
   Bar,
   XAxis,
   YAxis,
-} from "recharts";
-import { useParams } from "react-router-dom";
-import { useAllPositions } from "@/hooks/usePositions";
+} from "recharts"
+import { useParams } from "react-router-dom"
+import { useAllPositions } from "@/hooks/usePositions"
 import {
   TooltipContent,
   Tooltip as TooltipSd,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { CirclesWithBar } from "react-loader-spinner";
-
+} from "@/components/ui/tooltip"
+import { CirclesWithBar } from "react-loader-spinner"
 // Define types for voteData and related data
 interface Candidate {
   _id: string;
@@ -56,58 +57,160 @@ interface Position {
   candidates: Candidate[];
 }
 
-const VoteDetails = () => {
-  const { positions, refetch, isLoading } = useAllPositions();
+const VoteDetails: React.FC = () => {
+  const { positions, refetch, isLoading } = useAllPositions("")
+  const { positionId } = useParams<{ positionId: string }>()
+  const [activeTab, setActiveTab] = useState<string>("overview")
+  const [expandedCandidate, setExpandedCandidate] = useState<string | null>(null)
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      refetch(); // Re-fetch the voting data
-    }, 5000); // Poll every 5 seconds
+    const interval = setInterval(refetch, 5000)
+    return () => clearInterval(interval)
+  }, [refetch])
 
-    return () => clearInterval(interval);
-  }, [refetch]);
-
-  const { positionId } = useParams<{ positionId: string }>(); // Update to use correct type
-  const position = positions?.find(
-    (position) => position._id === positionId
-  ) as Position; // Cast to Position type
-  const totalVotes = position?.candidates.reduce(
-    (sum, candidate) => sum + candidate.votes,
-    0
-  );
-
-  const [activeTab, setActiveTab] = useState<string>("overview");
-  const [expandedCandidate, setExpandedCandidate] = useState<string | null>(
-    null
-  );
-
-  const leadingCandidate = position?.candidates?.reduce((prev, current) =>
+  const position = positions?.find((p) => p._id === positionId)
+  const totalVotes = position?.candidates.reduce((sum, c) => sum + c.votes, 0) || 0
+  const leadingCandidate = position?.candidates.reduce((prev, current) =>
     prev.votes > current.votes ? prev : current
-  );
+  )
 
-  const pieChartData = position?.candidates?.map((candidate) => ({
-    name: candidate.name,
-    value: candidate.votes,
-  }));
-
-  const barChartData = position?.candidates?.map((candidate) => ({
-    name: candidate?.name,
-    votes: candidate?.votes,
-  }));
-
-  const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444"];
+  const pieChartData = position?.candidates.map((c) => ({ name: c.name, value: c.votes }))
+  const barChartData = position?.candidates.map((c) => ({ name: c.name, votes: c.votes }))
+  const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444"]
 
   const recentVoters = position?.candidates
-    .flatMap((candidate) =>
-      candidate?.voters.map((voter) => ({
-        ...voter,
-        votedFor: candidate?.name,
-      }))
+    .flatMap((c) => c.voters.map((v) => ({ ...v, votedFor: c.name })))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5)
+
+  const CreatorCard: React.FC<{ creator: any }> = ({ creator }) => (
+    <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white overflow-hidden">
+      <CardContent className="p-6 relative">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
+        <h3 className="text-2xl font-bold mb-2">Position Creator</h3>
+        <div className="flex items-center space-x-4">
+          <Avatar className="h-16 w-16 border-2 border-white">
+            <AvatarImage src={creator.photo} alt={creator.name} />
+            <AvatarFallback>{creator.name[0]}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="text-xl font-semibold">{creator.name}</p>
+            <p className="text-sm opacity-75">{creator.email}</p>
+          </div>
+        </div>
+        <Link to={`/creator-details/${position?._id}`} className="block mt-4">
+          <Button variant="secondary" className="w-full">
+            See Full Details
+          </Button>
+        </Link>
+      </CardContent>
+    </Card>
+  )
+
+  const CandidateCard: React.FC<{ candidate: Candidate }> = ({ candidate }) => (
+    <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+      <CardContent className="p-6">
+        <div className="flex items-center space-x-4">
+          <Avatar className="h-16 w-16 border-2 border-indigo-200">
+            <AvatarImage src={candidate.photo} alt={candidate.name} />
+            <AvatarFallback>{candidate.name[0]}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="text-xl font-semibold text-indigo-800">{candidate.name}</h3>
+            <p className="text-gray-600">ID: {candidate.studentId}</p>
+            <Badge variant="secondary" className="mt-1">
+              {((candidate.votes / totalVotes) * 100).toFixed(1)}% of total
+            </Badge>
+          </div>
+        </div>
+        <div className="mt-4 space-y-2">
+          <p className="flex items-center text-gray-700">
+            <Mail className="mr-2 h-4 w-4" /> {candidate.email || "N/A"}
+          </p>
+          <p className="flex items-center text-gray-700">
+            <MessageCircle className="mr-2 h-4 w-4" /> {candidate.message || "No message provided"}
+          </p>
+          <p className="font-bold text-2xl text-indigo-600">{candidate.votes} votes</p>
+        </div>
+        <div className="mt-4 flex justify-between items-center">
+          <Link to={`/candidate-details/${candidate._id}`}>
+            <Button variant="outline">See Details</Button>
+          </Link>
+          <Button
+            variant="ghost"
+            onClick={() => setExpandedCandidate(expandedCandidate === candidate._id ? null : candidate._id)}
+          >
+            {expandedCandidate === candidate._id ? <ChevronUp /> : <ChevronDown />}
+          </Button>
+        </div>
+        {expandedCandidate === candidate._id && (
+          <div className="mt-4">
+            <h4 className="font-semibold mb-2 text-indigo-700">Voters:</h4>
+            <ScrollArea className="h-64">
+              {candidate.voters.map((voter, index) => (
+                <VoterCard key={index} voter={{ ...voter, votedFor: candidate.name }} />
+              ))}
+            </ScrollArea>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+
+  const VoterCard: React.FC<{ voter: Voter & { votedFor: string } }> = ({ voter }) => (
+    <Card className="bg-gray-50 hover:bg-gray-100 transition-colors duration-300 mb-2">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={voter.photo} alt={voter.name} />
+              <AvatarFallback>{voter.name[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium text-gray-800">{voter.name}</p>
+              <p className="text-xs text-gray-500">ID: {voter.studentId}</p>
+              <p className="text-xs text-gray-500">{voter.email}</p>
+            </div>
+          </div>
+          <Badge variant="outline">{voter.votedFor}</Badge>
+        </div>
+        <TooltipProvider>
+          <TooltipSd>
+            <TooltipTrigger asChild>
+              <p className="text-xs text-gray-400 mt-2">{moment(voter.createdAt).fromNow()}</p>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{moment(voter.createdAt).format("DD MMM YYYY, hh:mm:ss A")}</p>
+            </TooltipContent>
+          </TooltipSd>
+        </TooltipProvider>
+        <Link to={`/voter-details/${voter._id}`} className="block mt-2">
+          <Button variant="outline" size="sm" className="w-full">
+            See Details
+          </Button>
+        </Link>
+      </CardContent>
+    </Card>
+  )
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CirclesWithBar
+          height="80"
+          width="80"
+          color="#4fa94d"
+          outerCircleColor="#4fa94d"
+          innerCircleColor="#4fa94d"
+          barColor="#4fa94d"
+          ariaLabel="circles-with-bar-loading"
+          wrapperStyle={{}}
+          wrapperClass=""
+          visible={true}
+        />
+      </div>
     )
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-    .slice(0, 5);
+  }
 
   return (
     <div className="container mx-auto p-4 bg-gradient-to-br from-purple-50 to-indigo-50 min-h-screen rounded-xl">
@@ -115,358 +218,149 @@ const VoteDetails = () => {
         {position?.title} - Vote Details
       </h1>
 
-      {isLoading ? (
-        <div className="absolute w-fit h-fit top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <CirclesWithBar
-            height="80"
-            width="80"
-            color="#4fa94d"
-            outerCircleColor="#4fa94d"
-            innerCircleColor="#4fa94d"
-            barColor="#4fa94d"
-            ariaLabel="circles-with-bar-loading"
-            wrapperStyle={{}}
-            wrapperClass=""
-            visible={true}
-          />
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="md:col-span-2 bg-white shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-semibold text-indigo-700">
-                  Vote Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-lg font-medium text-gray-700">
-                    Total Votes: {totalVotes}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="md:col-span-2 bg-white shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold text-indigo-700">Vote Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-lg font-medium text-gray-700">Total Votes: {totalVotes}</span>
+              <Badge variant="secondary" className="text-sm">
+                Ends: {moment(position?.endTime).format("MMMM Do YYYY, h:mm:ss a")}
+              </Badge>
+            </div>
+            {position?.candidates?.map((candidate) => (
+              <div key={candidate?._id} className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-gray-800">{candidate?.name}</span>
+                  <span className="text-sm text-gray-600">
+                    {((candidate.votes / totalVotes) * 100).toFixed(1)}%
                   </span>
-                  <Badge variant="secondary" className="text-sm">
-                    {moment(position?.endTime).format(
-                      "MMMM Do YYYY, h:mm:ss a"
-                    )}
-                    (End Time)
-                  </Badge>
                 </div>
-                {position?.candidates?.map((candidate) => (
-                  <div key={candidate?._id} className="mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-gray-800">
-                        {candidate?.name}
-                      </span>
-                      <span className="text-sm text-gray-600">
-                        {((candidate.votes / totalVotes) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <Progress
-                      value={(candidate.votes / totalVotes) * 100}
-                      className="h-2"
-                    />
-                  </div>
-                ))}
-                <div className="mt-6 p-4 bg-indigo-100 rounded-lg">
-                  <h3 className="text-lg font-semibold text-indigo-800 mb-2">
+                <Progress value={(candidate.votes / totalVotes) * 100} className="h-2" />
+              </div>
+            ))}
+            {leadingCandidate && (
+              <Card className="mt-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold mb-4">
                     {position?.status === "live" ? "Current Leader" : "Winner"}
                   </h3>
-                  <div className="flex items-center">
-                    <Avatar className="h-12 w-12 mr-4">
-                      <AvatarImage
-                        src={leadingCandidate?.photo}
-                        alt={leadingCandidate?.name}
-                      />
-                      <AvatarFallback>{leadingCandidate?.name}</AvatarFallback>
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-16 w-16 border-2 border-white">
+                      <AvatarImage src={leadingCandidate.photo} alt={leadingCandidate.name} />
+                      <AvatarFallback>{leadingCandidate.name[0]}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium text-gray-800">
-                        {leadingCandidate?.name}
-                      </p>
-                      <p className="font-normal text-sm text-gray-800">
-                        {leadingCandidate?.studentId}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Votes: {leadingCandidate?.votes}
-                      </p>
+                      <p className="text-2xl font-bold">{leadingCandidate.name}</p>
+                      <p className="text-sm opacity-75">ID: {leadingCandidate.studentId}</p>
+                      <p className="text-sm opacity-75">Email: {leadingCandidate.email}</p>
+                      <p className="text-lg font-semibold mt-2">Votes: {leadingCandidate.votes}</p>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
+          </CardContent>
+        </Card>
 
-            <Card className="bg-white shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-semibold text-indigo-700">
-                  Vote Distribution
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={pieChartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {pieChartData?.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <Card className="bg-white shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-semibold text-indigo-700">
-                  Individual Votes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={barChartData}>
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="votes" fill="#4F46E5" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-semibold text-indigo-700">
-                  Recent Voters
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[300px]">
-                  {recentVoters?.map((voter, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center mb-4 p-2 bg-gray-50 rounded-lg"
-                    >
-                      <Avatar className="h-10 w-10 mr-3">
-                        <AvatarImage src={voter.photo} alt={voter.name} />
-                        <AvatarFallback>{voter.name}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-gray-800">
-                          {voter.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Voted for: {voter.votedFor}
-                        </p>
-                        <TooltipProvider>
-                          <TooltipSd>
-                            <TooltipTrigger asChild>
-                              <p className="text-xs text-gray-400">
-                                {moment(voter.createdAt).fromNow()}
-                              </p>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {moment(voter.createdAt).format(
-                                  "DD MMM YYYY, hh:mm:ss A"
-                                )}
-                              </p>
-                            </TooltipContent>
-                          </TooltipSd>
-                        </TooltipProvider>
-                      </div>
-                    </div>
-                  ))}
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="mt-6 bg-white shadow-xl">
+        <div className="space-y-6">
+          {position?.creator && <CreatorCard creator={position.creator} />}
+          <Card className="bg-white shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-indigo-700">
-                More Details
-              </CardTitle>
+              <CardTitle className="text-2xl font-semibold text-indigo-700">Vote Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="voters">Voters</TabsTrigger>
-                </TabsList>
-                {position?.candidates.map((candidate) => (
-                  <TabsContent
-                    key={candidate._id}
-                    value="overview"
-                    className="mt-4"
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieChartData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
                   >
-                    <div
-                      className="flex flex-col sm:flex-row items-center justify-between p-4 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg cursor-pointer"
-                      onClick={() =>
-                        setExpandedCandidate(
-                          expandedCandidate === candidate._id
-                            ? null
-                            : candidate._id
-                        )
-                      }
-                    >
-                      <div className="flex items-center sm:flex-row flex-col">
-                        <Avatar className="h-16 w-16 sm:mr-4">
-                          <AvatarImage
-                            src={candidate.photo}
-                            alt={candidate.name}
-                          />
-                          <AvatarFallback>{candidate.name}</AvatarFallback>
-                        </Avatar>
-                        <div className="text-center sm:text-left">
-                          <h3 className="text-xl font-semibold text-indigo-800">
-                            {candidate.name}
-                          </h3>
-                          <p className="text-gray-600">
-                            Student ID: {candidate.studentId}
-                          </p>
-                          <Badge variant="secondary" className="mt-2">
-                            {((candidate.votes / totalVotes) * 100).toFixed(1)}%
-                            of total
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="text-center sm:text-right mt-4 sm:mt-0">
-                        <p className="font-bold text-2xl text-indigo-600">
-                          {candidate.votes}
-                        </p>
-                        <p className="text-sm text-gray-500">votes</p>
-                      </div>
-                      {expandedCandidate === candidate._id ? (
-                        <ChevronUp className="text-indigo-600 mt-4 sm:mt-0" />
-                      ) : (
-                        <ChevronDown className="text-indigo-600 mt-4 sm:mt-0" />
-                      )}
-                    </div>
-
-                    {expandedCandidate === candidate._id && (
-                      <div className="mt-2 p-4 bg-gray-50 rounded-lg">
-                        <h4 className="font-semibold mb-2 text-indigo-700">
-                          Voters:
-                        </h4>
-                        <ScrollArea className="h-40">
-                          {candidate.voters.map((voter, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center mb-2 p-2 bg-white rounded-lg"
-                            >
-                              <Avatar className="h-10 w-10 mr-3">
-                                <AvatarImage
-                                  src={voter.photo}
-                                  alt={voter.name}
-                                />
-                                <AvatarFallback>
-                                  {voter.name.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium text-gray-800">
-                                  {voter.name}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  ID: {voter.studentId}
-                                </p>
-
-                                <TooltipProvider>
-                                  <TooltipSd>
-                                    <TooltipTrigger asChild>
-                                      <p className="text-xs text-gray-400">
-                                        {moment(voter.createdAt).fromNow()}
-                                      </p>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>
-                                        {moment(voter.createdAt).format(
-                                          "DD MMM YYYY, hh:mm:ss A"
-                                        )}
-                                      </p>
-                                    </TooltipContent>
-                                  </TooltipSd>
-                                </TooltipProvider>
-                              </div>
-                            </div>
-                          ))}
-                        </ScrollArea>
-                      </div>
-                    )}
-                  </TabsContent>
-                ))}
-                {position?.candidates.map((candidate) => (
-                  <TabsContent key={candidate._id} value="voters">
-                    <h3 className="text-xl font-semibold text-indigo-800 mb-4">
-                      {candidate.name}'s Voters
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {candidate.voters.map((voter, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center p-3 bg-gray-50 rounded-lg"
-                        >
-                          <Avatar className="h-10 w-10 mr-3">
-                            <AvatarImage src={voter.photo} alt={voter.name} />
-                            <AvatarFallback>
-                              {voter.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium text-gray-800">
-                              {voter.name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              ID: {voter.studentId}
-                            </p>
-
-                            <TooltipProvider>
-                              <TooltipSd>
-                                <TooltipTrigger asChild>
-                                  <p className="text-xs text-gray-400">
-                                    {moment(voter.createdAt).fromNow()}
-                                  </p>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>
-                                    {moment(voter.createdAt).format(
-                                      "DD MMM YYYY, hh:mm:ss A"
-                                    )}
-                                  </p>
-                                </TooltipContent>
-                              </TooltipSd>
-                            </TooltipProvider>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </TabsContent>
-                ))}
-              </Tabs>
+                    {pieChartData?.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
-        </>
-      )}
-    </div>
-  );
-};
+        </div>
+      </div>
 
-export default VoteDetails;
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <Card className="bg-white shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold text-indigo-700">Individual Votes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={barChartData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="votes" fill="#4F46E5" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold text-indigo-700">Recent Voters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[300px]">
+              {recentVoters?.map((voter, index) => (
+                <VoterCard key={index} voter={voter} />
+              ))}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="mt-6 bg-white shadow-xl">
+        <CardHeader>
+          <CardTitle className="text-2xl font-semibold text-indigo-700">More Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="voters">Voters</TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {position?.candidates.map((candidate) => (
+                  <CandidateCard key={candidate._id} candidate={candidate} />
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="voters">
+              {position?.candidates.map((candidate) => (
+                <div key={candidate._id} className="mb-8">
+                  <h3 className="text-xl font-semibold text-indigo-800 mb-4">{candidate.name}'s Voters</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {candidate.voters.map((voter, index) => (
+                      <VoterCard key={`${candidate._id}-${index}`} voter={{ ...voter, votedFor: candidate.name }} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default VoteDetails
