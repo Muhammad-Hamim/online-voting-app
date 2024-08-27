@@ -19,6 +19,7 @@ import VoteDetails from "@/pages/admin dashboard/VoteDetails";
 import UserDetails from "@/pages/admin dashboard/UserDetails";
 import CreatePosition from "@/pages/admin dashboard/CreatePosition";
 import ManagePositions from "@/pages/admin dashboard/ManagePositions";
+import AdminRoute from "./AdminRoute";
 
 const router = createBrowserRouter([
   {
@@ -111,23 +112,43 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Profile />,
+        element: (
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        ),
       },
       {
         path: "user-management",
-        element: <UserManagement />,
+        element: (
+          <AdminRoute>
+            <UserManagement />
+          </AdminRoute>
+        ),
       },
       {
         path: "user-management/user-details/:email",
-        element: <UserDetails />,
+        element: (
+          <AdminRoute>
+            <UserDetails />
+          </AdminRoute>
+        ),
       },
       {
         path: "live-votes",
-        element: <AdminLiveVotes />,
+        element: (
+          <AdminRoute>
+            <AdminLiveVotes />
+          </AdminRoute>
+        ),
       },
       {
         path: "positions/see-details/:positionId",
-        element: <VoteDetails />,
+        element: (
+          <AdminRoute>
+            <VoteDetails />
+          </AdminRoute>
+        ),
       },
       {
         path: "closed-votes",
@@ -138,19 +159,22 @@ const router = createBrowserRouter([
         children: [
           {
             path: "create-position",
-            element: <CreatePosition />,
+            element: (
+              <AdminRoute>
+                <CreatePosition />
+              </AdminRoute>
+            ),
           },
           {
             path: "manage-positions",
-            element: <ManagePositions />,
+            element: (
+              <AdminRoute>
+                <ManagePositions />
+              </AdminRoute>
+            ),
           },
         ],
       },
-      {
-        path: "voting-history",
-        element: <VotingHistory />,
-      },
-      // Add more dashboard-specific routes here if needed
     ],
   },
   {
