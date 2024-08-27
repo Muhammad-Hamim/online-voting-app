@@ -136,7 +136,9 @@ const VoteDetails: React.FC = () => {
           </p>
         </div>
         <div className="mt-4 flex justify-between items-center">
-          <Link to={`/candidate-details/${candidate._id}`}>
+          <Link
+            to={`/admin-dashboard/user-management/user-details/${candidate.email}`}
+          >
             <Button variant="outline">See Details</Button>
           </Link>
           <Button
@@ -204,7 +206,10 @@ const VoteDetails: React.FC = () => {
             </TooltipContent>
           </TooltipSd>
         </TooltipProvider>
-        <Link to={`/voter-details/${voter._id}`} className="block mt-2">
+        <Link
+          to={`/admin-dashboard/user-management/user-details/${voter.email}`}
+          className="block mt-2"
+        >
           <Button variant="outline" size="sm" className="w-full">
             See Details
           </Button>
