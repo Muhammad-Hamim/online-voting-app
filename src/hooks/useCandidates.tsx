@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "./useAxiosSecure";
 import toast from "react-hot-toast";
 import { IAppliedPositions, TCandidate } from "@/types/candidates";
 import useCustomState from "./useCustomState";
+import { AxiosError } from "axios";
+import { ErrorResponse } from "@/types/positions";
+import { useAllPositions } from "./usePositions";
 
 const useGetCandidates = () => {
   const { positionId: position } = useCustomState();
@@ -81,4 +84,42 @@ const useMyApplications = (email: string) => {
   };
 };
 
-export { useGetCandidates, useMyApplications };
+const useUpdateCandidateStatus = () => {
+  const queryClient = useQueryClient();
+  const [axiosSecure] = useAxiosSecure();
+  const { refetch } = useAllPositions("");
+  // Mutation for updating candidate status
+  const updateCandidateStatus = useMutation({
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: string;
+    }): Promise<Record<string, unknown>> => {
+      const payload = { status };
+      const response = await axiosSecure.patch(
+        `/candidates/update-candidate-status/${id}`,
+        payload
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("candidate status updated successfully!");
+      // Correctly invalidate queries by passing the key as a string or array of strings
+      queryClient.invalidateQueries({ queryKey: ["positions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["positions-with-candidates"],
+      });
+      refetch();
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      toast.error(`${error.response?.data?.message}`);
+    },
+  });
+
+  return {
+    updateCandidateStatus,
+  };
+};
+export { useGetCandidates, useMyApplications, useUpdateCandidateStatus };

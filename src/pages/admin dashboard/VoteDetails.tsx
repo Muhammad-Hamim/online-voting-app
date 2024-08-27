@@ -330,7 +330,7 @@ const VoteDetails: React.FC = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {pieChartData?.map((entry, index) => (
+                    {pieChartData?.map((_, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}

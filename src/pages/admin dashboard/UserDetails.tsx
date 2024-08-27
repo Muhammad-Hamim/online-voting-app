@@ -40,7 +40,7 @@ const CountdownTimer = ({
 
   return (
     <div className="flex flex-col items-center">
-      <p className="text-sm font-semibold mb-2">Ends in</p>
+      <p className="text-sm font-semibold mb-2">{type} in</p>
       <div className="flex space-x-2 text-lg font-mono">
         <div className="bg-gray-200 p-3 rounded-lg">
           {String(timeLeft.days).padStart(2, "0")}

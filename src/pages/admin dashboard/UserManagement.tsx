@@ -44,8 +44,8 @@ const UserManagement = () => {
   const [axiosSecure] = useAxiosSecure();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(100);
+  const [currentPage] = useState<number>(1);
+  const [itemsPerPage] = useState<number>(100);
 
   const { users, isLoading, isError, refetch } = useGetAllUser({
     searchTerm,

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ICandidate } from "@/types/positions";
+import { useUpdateCandidateStatus } from "@/hooks/useCandidates";
 
 const MPCandidateCard = ({
   candidate,
@@ -27,6 +28,8 @@ const MPCandidateCard = ({
   candidate: ICandidate;
   positionStatus: string;
 }) => {
+  const { updateCandidateStatus } = useUpdateCandidateStatus();
+
   if (!candidate) {
     return (
       <div className="flex items-center justify-center p-4 bg-gray-100 rounded-lg">
@@ -34,6 +37,9 @@ const MPCandidateCard = ({
       </div>
     );
   }
+  const handleUpdateStatus = (id: string, status: string) => {
+    updateCandidateStatus.mutate({ id, status });
+  };
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white shadow rounded-lg hover:shadow-md transition-shadow duration-300">
@@ -47,6 +53,11 @@ const MPCandidateCard = ({
           <p className="text-sm text-gray-500">{candidate.email}</p>
           <div className="flex items-center space-x-2 mt-1">
             <Badge
+              className={
+                candidate.status === "approved"
+                  ? "bg-green-100 text-green-600"
+                  : ""
+              }
               variant={
                 candidate.status === "approved"
                   ? "default"
@@ -85,10 +96,20 @@ const MPCandidateCard = ({
               </DropdownMenuLabel>
               {positionStatus === "pending" && (
                 <>
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      handleUpdateStatus(candidate?._id as string, "approved")
+                    }
+                    className="cursor-pointer"
+                  >
                     <Check className="mr-2 h-4 w-4" /> Approve
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      handleUpdateStatus(candidate?._id as string, "rejected")
+                    }
+                    className="cursor-pointer"
+                  >
                     <X className="mr-2 h-4 w-4" /> Reject
                   </DropdownMenuItem>
                 </>
