@@ -30,7 +30,11 @@ const useAxiosSecure = () => {
       async (error) => {
         const originalRequest = error.config;
 
-        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+        if (
+          error.response &&
+          (error.response.status === 401 || error.response.status === 500) &&
+          !originalRequest._retry
+        ) {
           originalRequest._retry = true;
 
           try {
@@ -53,13 +57,6 @@ const useAxiosSecure = () => {
           navigate("/");
           return Promise.reject(error);
         }
-
-        // Handle other errors, such as 500 Internal Server Error
-        if (error.response && error.response.status === 500) {
-          toast.error("An internal server error occurred. Please try again later.");
-          return Promise.reject(error);
-        }
-
         return Promise.reject(error);
       }
     );

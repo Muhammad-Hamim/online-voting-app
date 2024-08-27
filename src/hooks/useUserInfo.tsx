@@ -57,7 +57,7 @@ const useGetAllUser = (query: {
     queryFn: async () => {
       try {
         const response = await axiosSecure.get(
-          `/users?searchTerm=${
+          `/users/all-users?searchTerm=${
             searchTerm ? searchTerm : ""
           }&page${page}&limit=${limit}`
         );
@@ -94,7 +94,7 @@ const useGetSingleUser = (email: string) => {
     queryKey: ["getAllUsers", email], // Include searchTerm in the queryKey
     queryFn: async () => {
       try {
-        const response = await axiosSecure.get(`/users/${email}`);
+        const response = await axiosSecure.get(`/users/single-user/${email}`);
         return response.data.data;
       } catch (error) {
         toast.error("Error loading users data.");

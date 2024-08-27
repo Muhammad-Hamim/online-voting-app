@@ -59,23 +59,43 @@ const router = createBrowserRouter([
     children: [
       {
         index: true, // Default child route for "/dashboard"
-        element: <Profile />,
+        element: (
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        ),
       },
       {
         path: "live-votes",
-        element: <LiveVotes />,
+        element: (
+          <PrivateRoute>
+            <LiveVotes />
+          </PrivateRoute>
+        ),
       },
       {
         path: "closed-votes",
-        element: <ClosedVotes />,
+        element: (
+          <PrivateRoute>
+            <ClosedVotes />
+          </PrivateRoute>
+        ),
       },
       {
         path: "positions",
-        element: <Positions />,
+        element: (
+          <PrivateRoute>
+            <Positions />
+          </PrivateRoute>
+        ),
       },
       {
         path: "voting-history",
-        element: <VotingHistory />,
+        element: (
+          <PrivateRoute>
+            <VotingHistory />
+          </PrivateRoute>
+        ),
       },
       // Add more dashboard-specific routes here if needed
     ],
