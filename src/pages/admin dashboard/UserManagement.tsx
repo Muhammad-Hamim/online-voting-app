@@ -53,7 +53,7 @@ const UserManagement = () => {
     limit: itemsPerPage,
   });
   const totalUsers = users?.length;
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit } = useForm<{ searchTerm: string }>();
 
   // Debounce refetch function
   const debouncedRefetch = debounce(() => {

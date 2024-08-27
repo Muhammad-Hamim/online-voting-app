@@ -58,7 +58,6 @@ const ManagePositionsCard = ({
   };
   const candidateCounts = getCandidateCounts(position?.candidates);
 
-
   return (
     <>
       <Card
@@ -155,7 +154,7 @@ const ManagePositionsCard = ({
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="flex items-center text-sm">
               <Users className="mr-2 h-4 w-4 text-blue-500" />
-              <span>Max: {position.maxCandidate}</span>
+              <span>Max: {position.maxCandidates}</span>
             </div>
             <div className="flex items-center text-sm">
               <Vote className="mr-2 h-4 w-4 text-purple-500" />

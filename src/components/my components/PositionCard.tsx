@@ -1,61 +1,72 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { useForm, SubmitHandler } from "react-hook-form"
-import { useMutation } from "@tanstack/react-query"
-import { useUserInfo } from "@/hooks/useUserInfo"
-import useAxiosSecure from "@/hooks/useAxiosSecure"
-import toast from "react-hot-toast"
-import moment from "moment"
-import { AxiosError } from "axios"
-import { ErrorResponse } from "@/types/positions"
-import { TCandidateApplication } from "@/types/candidates"
-import { Clock, Users, UserPlus, Calendar, ChevronRight } from 'lucide-react'
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import useAxiosSecure from "@/hooks/useAxiosSecure";
+import toast from "react-hot-toast";
+import moment from "moment";
+import { AxiosError } from "axios";
+import { ErrorResponse, IPosition, TPosition } from "@/types/positions";
+import { TCandidateApplication } from "@/types/candidates";
+import { Clock, Users, UserPlus, Calendar, ChevronRight } from "lucide-react";
 
 interface PositionCardProps {
-  id: string
-  title: string
-  description: string
-  maxCandidates: number
-  maxVoters: number
-  appliedCandidates: number
-  deadline: string
-  refetch: () => void
+  position: TPosition & IPosition;
+  refetch: () => void;
 }
 
-const PositionCard: React.FC<PositionCardProps> = ({
-  id,
-  title,
-  description,
-  maxCandidates,
-  maxVoters,
-  appliedCandidates,
-  deadline,
-  refetch,
-}) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const isDeadlinePassed = moment().isAfter(deadline)
-  const { user } = useUserInfo()
-  const [axiosSecure] = useAxiosSecure()
-  const { register, handleSubmit, reset } = useForm<TCandidateApplication>()
+const PositionCard: React.FC<PositionCardProps> = ({ position, refetch }) => {
+  const {
+    _id: id,
+    title,
+    description,
+    startTime: deadline,
+    appliedCandidates,
+    maxCandidates,
+    maxVotes,
+  } = position;
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const isDeadlinePassed = moment().isAfter(deadline);
+  const { user } = useUserInfo();
+  const [axiosSecure] = useAxiosSecure();
+  const { register, handleSubmit, reset } = useForm<TCandidateApplication>();
 
   const applyCandidateMutation = useMutation({
     mutationFn: async (data: TCandidateApplication) => {
-      const response = await axiosSecure.post("/candidates/create-candidate", data)
-      return response.data
+      const response = await axiosSecure.post(
+        "/candidates/create-candidate",
+        data
+      );
+      return response.data;
     },
     onSuccess: () => {
-      setIsDialogOpen(false)
-      refetch()
-      reset()
+      setIsDialogOpen(false);
+      refetch();
+      reset();
     },
-  })
+  });
 
   const handleApplyCandidate: SubmitHandler<{ message: string }> = (data) => {
     const applicationData: TCandidateApplication = {
@@ -63,14 +74,14 @@ const PositionCard: React.FC<PositionCardProps> = ({
       email: user?.email as string,
       position: id,
       ...data,
-    }
+    };
     toast.promise(applyCandidateMutation.mutateAsync(applicationData), {
       loading: "Applying...",
       success: "Applied successfully!",
       error: (error: AxiosError<ErrorResponse>) =>
         error.response?.data?.message || "Failed to apply!",
-    })
-  }
+    });
+  };
 
   return (
     <motion.div
@@ -82,15 +93,35 @@ const PositionCard: React.FC<PositionCardProps> = ({
       <Card className="relative overflow-hidden h-full flex flex-col shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl border-0 bg-gradient-to-br from-purple-50 to-indigo-50 transform hover:rotate-y-5">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-bl-full opacity-20 z-0"></div>
         <CardHeader className="relative z-10 p-6">
-          <CardTitle className="text-2xl font-bold text-gray-800 mb-2">{title}</CardTitle>
-          <CardDescription className="text-gray-600 line-clamp-2">{description}</CardDescription>
+          <CardTitle className="text-2xl font-bold text-gray-800 mb-2">
+            {title}
+          </CardTitle>
+          <CardDescription className="text-gray-600 line-clamp-2">
+            {description}
+          </CardDescription>
         </CardHeader>
         <CardContent className="relative z-10 p-6 flex-grow">
           <div className="grid grid-cols-2 gap-4">
-            <InfoItem icon={<Users className="w-5 h-5 text-purple-500" />} label="Max Candidates" value={maxCandidates} />
-            <InfoItem icon={<UserPlus className="w-5 h-5 text-indigo-500" />} label="Applied" value={appliedCandidates} />
-            <InfoItem icon={<Calendar className="w-5 h-5 text-pink-500" />} label="Max Voters" value={maxVoters} />
-            <InfoItem icon={<Clock className="w-5 h-5 text-blue-500" />} label="Deadline" value={moment(deadline).format("MMM D, YYYY")} />
+            <InfoItem
+              icon={<Users className="w-5 h-5 text-purple-500" />}
+              label="Max Candidates"
+              value={maxCandidates}
+            />
+            <InfoItem
+              icon={<UserPlus className="w-5 h-5 text-indigo-500" />}
+              label="Applied"
+              value={appliedCandidates as number}
+            />
+            <InfoItem
+              icon={<Calendar className="w-5 h-5 text-pink-500" />}
+              label="Max Voters"
+              value={maxVotes}
+            />
+            <InfoItem
+              icon={<Clock className="w-5 h-5 text-blue-500" />}
+              label="Deadline"
+              value={moment(deadline).format("MMM D, YYYY")}
+            />
           </div>
         </CardContent>
         <CardFooter className="relative z-10 p-6">
@@ -103,7 +134,9 @@ const PositionCard: React.FC<PositionCardProps> = ({
             }`}
             disabled={isDeadlinePassed}
           >
-            {isDeadlinePassed ? "Application Closed" : (
+            {isDeadlinePassed ? (
+              "Application Closed"
+            ) : (
               <span className="flex items-center justify-center">
                 Apply Now
                 <ChevronRight className="ml-2 w-5 h-5" />
@@ -116,7 +149,9 @@ const PositionCard: React.FC<PositionCardProps> = ({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-800">Apply for Position</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-gray-800">
+              Apply for {title}
+            </DialogTitle>
             <DialogDescription className="text-gray-600">
               Share your vision and qualifications for this role.
             </DialogDescription>
@@ -124,7 +159,10 @@ const PositionCard: React.FC<PositionCardProps> = ({
           <form onSubmit={handleSubmit(handleApplyCandidate)}>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="message" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="message"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Why should people vote for you?
                 </Label>
                 <Textarea
@@ -136,7 +174,10 @@ const PositionCard: React.FC<PositionCardProps> = ({
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-full py-2 text-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-full py-2 text-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+              >
                 Submit Application
               </Button>
             </DialogFooter>
@@ -144,10 +185,14 @@ const PositionCard: React.FC<PositionCardProps> = ({
         </DialogContent>
       </Dialog>
     </motion.div>
-  )
-}
+  );
+};
 
-const InfoItem: React.FC<{ icon: React.ReactNode; label: string; value: number | string }> = ({ icon, label, value }) => (
+const InfoItem: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+}> = ({ icon, label, value }) => (
   <div className="flex items-center space-x-3 bg-white bg-opacity-50 rounded-xl p-3 shadow-sm">
     <div className="bg-white rounded-full p-2 shadow-inner">{icon}</div>
     <div>
@@ -155,6 +200,6 @@ const InfoItem: React.FC<{ icon: React.ReactNode; label: string; value: number |
       <p className="text-sm font-semibold text-gray-800">{value}</p>
     </div>
   </div>
-)
+);
 
-export default PositionCard
+export default PositionCard;

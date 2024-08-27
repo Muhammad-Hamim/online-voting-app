@@ -57,7 +57,7 @@ const ManagePositions = () => {
   const [isSearching, setIsSearching] = useState(false);
   const { positions, isLoading, refetch } = useAllPositions(searchTerm);
 
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit } = useForm<TSearchInput>();
 
   useEffect(() => {
     if (searchTerm) {

@@ -105,11 +105,8 @@ export default function Profile() {
     });
   };
 
-  const {
-    register: registerPassword,
-    handleSubmit: handleSubmitPassword,
-    formState: { errors: passwordErrors },
-  } = useForm<PasswordInputs>();
+  const { register: registerPassword, handleSubmit: handleSubmitPassword } =
+    useForm<PasswordInputs>();
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data: PasswordInputs) => {

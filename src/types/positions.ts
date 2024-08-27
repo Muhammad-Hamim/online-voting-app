@@ -16,7 +16,7 @@ export type TPosition = {
   terminationMessage?: string;
   maxVotes: number;
   creator: Partial<TUserData>;
-  maxCandidate: number;
+  maxCandidates: number;
   startTime: string;
   endTime: string;
   appliedCandidates?: number;
@@ -40,6 +40,7 @@ export interface ICandidate {
   photo: string;
   status: string;
   votes: number;
+  voters?:Partial<TUserData>[];
 }
 
 export interface IPosition {
@@ -48,6 +49,8 @@ export interface IPosition {
   description: string;
   status: "pending" | "live" | "terminated" | "closed";
   creator: string;
+  startTime:string;
+  endTime: string;
   candidates: ICandidate[];
   winner?: ICandidate;
 }

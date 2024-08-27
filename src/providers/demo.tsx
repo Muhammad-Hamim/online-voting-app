@@ -247,7 +247,7 @@ const ManagePositions = () => {
                         <div className="grid grid-cols-2 gap-4 mb-4">
                           <div className="flex items-center text-sm">
                             <Users className="mr-2 h-4 w-4 text-blue-500" />
-                            <span>Max: {position.maxCandidate}</span>
+                            <span>Max: {position.maxCandidates}</span>
                           </div>
                           <div className="flex items-center text-sm">
                             <Vote className="mr-2 h-4 w-4 text-purple-500" />
@@ -555,18 +555,18 @@ const ManagePositions = () => {
                                       </div>
                                       <div className="space-y-2">
                                         <Label
-                                          htmlFor="maxCandidate"
+                                          htmlFor="maxCandidates"
                                           className="text-right"
                                         >
                                           Max Candidates
                                         </Label>
                                         <Controller
-                                          name="maxCandidate"
+                                          name="maxCandidates"
                                           control={control}
-                                          defaultValue={position.maxCandidate}
+                                          defaultValue={position.maxCandidates}
                                           render={({ field }) => (
                                             <Input
-                                              id="maxCandidate"
+                                              id="maxCandidates"
                                               type="number"
                                               {...field}
                                               className="col-span-3"

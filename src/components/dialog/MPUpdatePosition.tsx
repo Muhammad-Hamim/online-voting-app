@@ -157,16 +157,16 @@ const MPUpdatePositionDialog = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="maxCandidate" className="text-right">
+                <Label htmlFor="maxCandidates" className="text-right">
                   Max Candidates
                 </Label>
                 <Controller
-                  name="maxCandidate"
+                  name="maxCandidates"
                   control={control}
-                  defaultValue={position.maxCandidate}
+                  defaultValue={position.maxCandidates}
                   render={({ field }) => (
                     <Input
-                      id="maxCandidate"
+                      id="maxCandidates"
                       type="number"
                       {...field}
                       className="col-span-3"

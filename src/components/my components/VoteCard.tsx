@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -21,7 +21,7 @@ type Position = {
   endTime: string;
   status: string;
   description: string;
-  setIsDialogOpen: () => void;
+  setIsDialogOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 const LiveVoteCard = ({
@@ -60,7 +60,11 @@ const LiveVoteCard = ({
               <motion.span
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
-                transition={{ duration: 0.3, repeat: Infinity, repeatType: "reverse" }}
+                transition={{
+                  duration: 0.3,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
                 className={`px-4 py-2 rounded-full text-sm font-bold ${
                   status === "live"
                     ? "bg-green-500 text-white"
@@ -70,12 +74,20 @@ const LiveVoteCard = ({
                 {status}
               </motion.span>
             </div>
-            <CardTitle className="text-3xl font-extrabold text-gray-800 mb-2">{title}</CardTitle>
-            {description && <CardDescription className="text-gray-600">{description}</CardDescription>}
+            <CardTitle className="text-3xl font-extrabold text-gray-800 mb-2">
+              {title}
+            </CardTitle>
+            {description && (
+              <CardDescription className="text-gray-600">
+                {description}
+              </CardDescription>
+            )}
           </CardHeader>
           <CardContent className="pt-6 relative z-10">
             <div className="bg-white bg-opacity-70 backdrop-blur-sm rounded-xl p-6 shadow-inner">
-              <p className="text-sm font-semibold mb-4 text-center text-gray-700">Time Remaining</p>
+              <p className="text-sm font-semibold mb-4 text-center text-gray-700">
+                Time Remaining
+              </p>
               <div className="flex justify-center space-x-4 text-lg font-mono">
                 {Object.entries(timeLeft).map(([unit, value], index) => (
                   <React.Fragment key={unit}>
@@ -83,9 +95,16 @@ const LiveVoteCard = ({
                       className="bg-gradient-to-br from-gray-600 to-gray-700 p-4 rounded-xl text-white shadow-md flex flex-col items-center"
                       initial={{ rotateY: 0 }}
                       animate={{ rotateY: 360 }}
-                      transition={{ duration: 0.5, delay: index * 0.1, repeat: Infinity, repeatDelay: 20 }}
+                      transition={{
+                        duration: 0.5,
+                        delay: index * 0.1,
+                        repeat: Infinity,
+                        repeatDelay: 20,
+                      }}
                     >
-                      <span className="text-2xl font-bold">{String(value).padStart(2, "0")}</span>
+                      <span className="text-2xl font-bold">
+                        {String(value).padStart(2, "0")}
+                      </span>
                       <span className="text-xs mt-1">{unit}</span>
                     </motion.div>
                   </React.Fragment>

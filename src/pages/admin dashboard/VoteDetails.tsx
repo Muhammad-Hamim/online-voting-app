@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
-import moment from "moment"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { ChevronDown, ChevronUp, Mail, MessageCircle, User } from "lucide-react"
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import moment from "moment";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp, Mail, MessageCircle } from "lucide-react";
 import {
   PieChart,
   Pie,
@@ -20,70 +20,65 @@ import {
   Bar,
   XAxis,
   YAxis,
-} from "recharts"
-import { useParams } from "react-router-dom"
-import { useAllPositions } from "@/hooks/usePositions"
+} from "recharts";
+import { useParams } from "react-router-dom";
+import { useAllPositions } from "@/hooks/usePositions";
 import {
   TooltipContent,
   Tooltip as TooltipSd,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { CirclesWithBar } from "react-loader-spinner"
+} from "@/components/ui/tooltip";
+import { CirclesWithBar } from "react-loader-spinner";
+import { TUserData } from "@/types/User";
+import { ICandidate } from "@/types/positions";
 // Define types for voteData and related data
-interface Candidate {
-  _id: string;
-  name: string;
-  photo: string;
-  votes: number;
-  voters: Voter[];
-  studentId: string;
-}
-
-interface Voter {
-  _id: string;
-  name: string;
-  photo: string;
-  studentId: string;
-  createdAt: string;
-}
-
-interface Position {
-  _id: string;
-  title: string;
-  description: string;
-  status: string;
-  endTime: string;
-  candidates: Candidate[];
-}
 
 const VoteDetails: React.FC = () => {
-  const { positions, refetch, isLoading } = useAllPositions("")
-  const { positionId } = useParams<{ positionId: string }>()
-  const [activeTab, setActiveTab] = useState<string>("overview")
-  const [expandedCandidate, setExpandedCandidate] = useState<string | null>(null)
+  const { positions, refetch, isLoading } = useAllPositions("");
+  const { positionId } = useParams<{ positionId: string }>();
+  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [expandedCandidate, setExpandedCandidate] = useState<string | null>(
+    null
+  );
 
-  useEffect(() => {
-    const interval = setInterval(refetch, 5000)
-    return () => clearInterval(interval)
-  }, [refetch])
-
-  const position = positions?.find((p) => p._id === positionId)
-  const totalVotes = position?.candidates.reduce((sum, c) => sum + c.votes, 0) || 0
+  const position = positions?.find((p) => p._id === positionId);
+  const totalVotes =
+    position?.candidates.reduce((sum, c) => sum + c.votes, 0) || 0;
   const leadingCandidate = position?.candidates.reduce((prev, current) =>
     prev.votes > current.votes ? prev : current
-  )
+  );
+  useEffect(() => {
+    if (position?.status === "live") {
+      const interval = setInterval(refetch, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [position?.status, refetch]);
 
-  const pieChartData = position?.candidates.map((c) => ({ name: c.name, value: c.votes }))
-  const barChartData = position?.candidates.map((c) => ({ name: c.name, votes: c.votes }))
-  const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444"]
+  const pieChartData = position?.candidates.map((c) => ({
+    name: c.name,
+    value: c.votes,
+  }));
+  const barChartData = position?.candidates.map((c) => ({
+    name: c.name,
+    votes: c.votes,
+  }));
+  const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444"];
 
   const recentVoters = position?.candidates
-    .flatMap((c) => c.voters.map((v) => ({ ...v, votedFor: c.name })))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5)
+    .flatMap((c) =>
+      c?.voters?.map((v: Partial<TUserData>) => ({ ...v, votedFor: c.name }))
+    )
+    .sort(
+      (a, b) =>
+        new Date(b?.createdAt as string).getTime() -
+        new Date(a?.createdAt as string).getTime()
+    )
+    .slice(0, 5);
 
-  const CreatorCard: React.FC<{ creator: any }> = ({ creator }) => (
+  const CreatorCard: React.FC<{ creator: Partial<TUserData> }> = ({
+    creator,
+  }) => (
     <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white overflow-hidden">
       <CardContent className="p-6 relative">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
@@ -91,7 +86,7 @@ const VoteDetails: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Avatar className="h-16 w-16 border-2 border-white">
             <AvatarImage src={creator.photo} alt={creator.name} />
-            <AvatarFallback>{creator.name[0]}</AvatarFallback>
+            <AvatarFallback>{creator?.name}</AvatarFallback>
           </Avatar>
           <div>
             <p className="text-xl font-semibold">{creator.name}</p>
@@ -105,21 +100,26 @@ const VoteDetails: React.FC = () => {
         </Link>
       </CardContent>
     </Card>
-  )
+  );
 
-  const CandidateCard: React.FC<{ candidate: Candidate }> = ({ candidate }) => (
+  const CandidateCard: React.FC<{ candidate: Partial<ICandidate> }> = ({
+    candidate,
+  }) => (
     <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-center space-x-4">
           <Avatar className="h-16 w-16 border-2 border-indigo-200">
             <AvatarImage src={candidate.photo} alt={candidate.name} />
-            <AvatarFallback>{candidate.name[0]}</AvatarFallback>
+            <AvatarFallback>{candidate?.name}</AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="text-xl font-semibold text-indigo-800">{candidate.name}</h3>
+            <h3 className="text-xl font-semibold text-indigo-800">
+              {candidate.name}
+            </h3>
             <p className="text-gray-600">ID: {candidate.studentId}</p>
             <Badge variant="secondary" className="mt-1">
-              {((candidate.votes / totalVotes) * 100).toFixed(1)}% of total
+              {(((candidate?.votes as number) / totalVotes) * 100).toFixed(1)}%
+              of total
             </Badge>
           </div>
         </div>
@@ -128,9 +128,12 @@ const VoteDetails: React.FC = () => {
             <Mail className="mr-2 h-4 w-4" /> {candidate.email || "N/A"}
           </p>
           <p className="flex items-center text-gray-700">
-            <MessageCircle className="mr-2 h-4 w-4" /> {candidate.message || "No message provided"}
+            <MessageCircle className="mr-2 h-4 w-4" />{" "}
+            {candidate.message || "No message provided"}
           </p>
-          <p className="font-bold text-2xl text-indigo-600">{candidate.votes} votes</p>
+          <p className="font-bold text-2xl text-indigo-600">
+            {candidate.votes} votes
+          </p>
         </div>
         <div className="mt-4 flex justify-between items-center">
           <Link to={`/candidate-details/${candidate._id}`}>
@@ -138,33 +141,48 @@ const VoteDetails: React.FC = () => {
           </Link>
           <Button
             variant="ghost"
-            onClick={() => setExpandedCandidate(expandedCandidate === candidate._id ? null : candidate._id)}
+            onClick={() =>
+              setExpandedCandidate(
+                expandedCandidate === candidate?._id
+                  ? null
+                  : (candidate?._id as string)
+              )
+            }
           >
-            {expandedCandidate === candidate._id ? <ChevronUp /> : <ChevronDown />}
+            {expandedCandidate === candidate._id ? (
+              <ChevronUp />
+            ) : (
+              <ChevronDown />
+            )}
           </Button>
         </div>
         {expandedCandidate === candidate._id && (
           <div className="mt-4">
             <h4 className="font-semibold mb-2 text-indigo-700">Voters:</h4>
             <ScrollArea className="h-64">
-              {candidate.voters.map((voter, index) => (
-                <VoterCard key={index} voter={{ ...voter, votedFor: candidate.name }} />
+              {candidate?.voters?.map((voter, index) => (
+                <VoterCard
+                  key={index}
+                  voter={{ ...voter, votedFor: candidate?.name as string }}
+                />
               ))}
             </ScrollArea>
           </div>
         )}
       </CardContent>
     </Card>
-  )
+  );
 
-  const VoterCard: React.FC<{ voter: Voter & { votedFor: string } }> = ({ voter }) => (
+  const VoterCard: React.FC<{
+    voter: Partial<TUserData> & { votedFor: string };
+  }> = ({ voter }) => (
     <Card className="bg-gray-50 hover:bg-gray-100 transition-colors duration-300 mb-2">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={voter.photo} alt={voter.name} />
-              <AvatarFallback>{voter.name[0]}</AvatarFallback>
+              <AvatarFallback>{voter?.name}</AvatarFallback>
             </Avatar>
             <div>
               <p className="font-medium text-gray-800">{voter.name}</p>
@@ -177,7 +195,9 @@ const VoteDetails: React.FC = () => {
         <TooltipProvider>
           <TooltipSd>
             <TooltipTrigger asChild>
-              <p className="text-xs text-gray-400 mt-2">{moment(voter.createdAt).fromNow()}</p>
+              <p className="text-xs text-gray-400 mt-2">
+                {moment(voter.createdAt).fromNow()}
+              </p>
             </TooltipTrigger>
             <TooltipContent>
               <p>{moment(voter.createdAt).format("DD MMM YYYY, hh:mm:ss A")}</p>
@@ -191,7 +211,7 @@ const VoteDetails: React.FC = () => {
         </Link>
       </CardContent>
     </Card>
-  )
+  );
 
   if (isLoading) {
     return (
@@ -209,7 +229,7 @@ const VoteDetails: React.FC = () => {
           visible={true}
         />
       </div>
-    )
+    );
   }
 
   return (
@@ -221,24 +241,34 @@ const VoteDetails: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2 bg-white shadow-xl">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-indigo-700">Vote Overview</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-indigo-700">
+              Vote Overview
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex justify-between items-center mb-4">
-              <span className="text-lg font-medium text-gray-700">Total Votes: {totalVotes}</span>
+              <span className="text-lg font-medium text-gray-700">
+                Total Votes: {totalVotes}
+              </span>
               <Badge variant="secondary" className="text-sm">
-                Ends: {moment(position?.endTime).format("MMMM Do YYYY, h:mm:ss a")}
+                Ends:{" "}
+                {moment(position?.endTime).format("MMMM Do YYYY, h:mm:ss a")}
               </Badge>
             </div>
             {position?.candidates?.map((candidate) => (
               <div key={candidate?._id} className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-gray-800">{candidate?.name}</span>
+                  <span className="font-medium text-gray-800">
+                    {candidate?.name}
+                  </span>
                   <span className="text-sm text-gray-600">
                     {((candidate.votes / totalVotes) * 100).toFixed(1)}%
                   </span>
                 </div>
-                <Progress value={(candidate.votes / totalVotes) * 100} className="h-2" />
+                <Progress
+                  value={(candidate.votes / totalVotes) * 100}
+                  className="h-2"
+                />
               </div>
             ))}
             {leadingCandidate && (
@@ -249,14 +279,27 @@ const VoteDetails: React.FC = () => {
                   </h3>
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-16 w-16 border-2 border-white">
-                      <AvatarImage src={leadingCandidate.photo} alt={leadingCandidate.name} />
-                      <AvatarFallback>{leadingCandidate.name[0]}</AvatarFallback>
+                      <AvatarImage
+                        src={leadingCandidate.photo}
+                        alt={leadingCandidate.name}
+                      />
+                      <AvatarFallback>
+                        {leadingCandidate.name[0]}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-2xl font-bold">{leadingCandidate.name}</p>
-                      <p className="text-sm opacity-75">ID: {leadingCandidate.studentId}</p>
-                      <p className="text-sm opacity-75">Email: {leadingCandidate.email}</p>
-                      <p className="text-lg font-semibold mt-2">Votes: {leadingCandidate.votes}</p>
+                      <p className="text-2xl font-bold">
+                        {leadingCandidate.name}
+                      </p>
+                      <p className="text-sm opacity-75">
+                        ID: {leadingCandidate.studentId}
+                      </p>
+                      <p className="text-sm opacity-75">
+                        Email: {leadingCandidate.email}
+                      </p>
+                      <p className="text-lg font-semibold mt-2">
+                        Votes: {leadingCandidate.votes}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -266,10 +309,14 @@ const VoteDetails: React.FC = () => {
         </Card>
 
         <div className="space-y-6">
-          {position?.creator && <CreatorCard creator={position.creator} />}
+          {position?.creator && (
+            <CreatorCard creator={position.creator as Partial<TUserData>} />
+          )}
           <Card className="bg-white shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-indigo-700">Vote Distribution</CardTitle>
+              <CardTitle className="text-2xl font-semibold text-indigo-700">
+                Vote Distribution
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -284,7 +331,10 @@ const VoteDetails: React.FC = () => {
                     dataKey="value"
                   >
                     {pieChartData?.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -299,7 +349,9 @@ const VoteDetails: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <Card className="bg-white shadow-xl">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-indigo-700">Individual Votes</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-indigo-700">
+              Individual Votes
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -315,12 +367,17 @@ const VoteDetails: React.FC = () => {
 
         <Card className="bg-white shadow-xl">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-indigo-700">Recent Voters</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-indigo-700">
+              Recent Voters
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[300px]">
               {recentVoters?.map((voter, index) => (
-                <VoterCard key={index} voter={voter} />
+                <VoterCard
+                  key={index}
+                  voter={voter as Partial<TUserData> & { votedFor: string }}
+                />
               ))}
             </ScrollArea>
           </CardContent>
@@ -329,10 +386,16 @@ const VoteDetails: React.FC = () => {
 
       <Card className="mt-6 bg-white shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-semibold text-indigo-700">More Details</CardTitle>
+          <CardTitle className="text-2xl font-semibold text-indigo-700">
+            More Details
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="voters">Voters</TabsTrigger>
@@ -347,10 +410,15 @@ const VoteDetails: React.FC = () => {
             <TabsContent value="voters">
               {position?.candidates.map((candidate) => (
                 <div key={candidate._id} className="mb-8">
-                  <h3 className="text-xl font-semibold text-indigo-800 mb-4">{candidate.name}'s Voters</h3>
+                  <h3 className="text-xl font-semibold text-indigo-800 mb-4">
+                    {candidate.name}'s Voters
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {candidate.voters.map((voter, index) => (
-                      <VoterCard key={`${candidate._id}-${index}`} voter={{ ...voter, votedFor: candidate.name }} />
+                    {candidate?.voters?.map((voter, index) => (
+                      <VoterCard
+                        key={`${candidate._id}-${index}`}
+                        voter={{ ...voter, votedFor: candidate.name }}
+                      />
                     ))}
                   </div>
                 </div>
@@ -360,7 +428,7 @@ const VoteDetails: React.FC = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default VoteDetails
+export default VoteDetails;

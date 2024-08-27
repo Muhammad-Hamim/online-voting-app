@@ -34,7 +34,7 @@ export default function AdminLiveVoteCard({
     status,
     description,
     maxVotes,
-    maxCandidate,
+    maxCandidates,
   } = position;
   const { timeLeft } = useTimer(startTime, endTime);
 
@@ -98,14 +98,14 @@ export default function AdminLiveVoteCard({
               <Calendar className="h-4 w-4 text-gray-500" />
               <span className="text-gray-600 dark:text-gray-300">Start:</span>
               <span className="font-medium text-gray-800 dark:text-gray-100">
-                {moment(startTime).format('DD MMM YY')}
+                {moment(startTime).format("DD MMM YY")}
               </span>
             </div>
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-gray-500" />
               <span className="text-gray-600 dark:text-gray-300">End:</span>
               <span className="font-medium text-gray-800 dark:text-gray-100">
-                {moment(endTime).format('DD MMM YY')}
+                {moment(endTime).format("DD MMM YY")}
               </span>
             </div>
             <div className="flex items-center space-x-2">
@@ -123,7 +123,7 @@ export default function AdminLiveVoteCard({
                 Max Candidates:
               </span>
               <span className="font-medium text-gray-800 dark:text-gray-100">
-                {maxCandidate}
+                {maxCandidates}
               </span>
             </div>
           </div>

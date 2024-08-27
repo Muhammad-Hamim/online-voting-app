@@ -14,6 +14,7 @@ import { CirclesWithBar } from "react-loader-spinner";
 import { Button } from "@/components/ui/button";
 import useCustomState from "@/hooks/useCustomState";
 import { Link } from "react-router-dom";
+import { IPosition, TPosition } from "@/types/positions";
 
 const AdminLiveVotes = () => {
   const {
@@ -30,7 +31,7 @@ const AdminLiveVotes = () => {
     ?.candidates?.filter((candidate) => candidate.status === "approved");
 
   const { livePositions, notStartedOrExpiredPositions } =
-    sortAndCategorizePositions(positions || []);
+    sortAndCategorizePositions((positions as TPosition[] & IPosition[]) || []);
 
   return (
     <>

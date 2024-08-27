@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +15,6 @@ import {
   Clock,
   Activity,
   Award,
-  Vote,
   IdCard,
   User,
   ArrowRight,
@@ -27,9 +25,18 @@ import { Link, useParams } from "react-router-dom";
 import { useGetSingleUser } from "@/hooks/useUserInfo";
 import { useMyApplications } from "@/hooks/useCandidates";
 import { CirclesWithBar } from "react-loader-spinner";
+import { useGetSingleUserVotes } from "@/hooks/useVotes";
 
-const CountdownTimer = ({ startTime, endTime, type }) => {
-  const { timeLeft, isVotingAllowed: isTimeUp } = useTimer(startTime, endTime);
+const CountdownTimer = ({
+  startTime,
+  endTime,
+  type,
+}: {
+  startTime: string;
+  endTime: string;
+  type: string;
+}) => {
+  const { timeLeft } = useTimer(startTime, endTime);
 
   return (
     <div className="flex flex-col items-center">
@@ -59,52 +66,13 @@ const CountdownTimer = ({ startTime, endTime, type }) => {
   );
 };
 
-export default function UserDetails() {
+const UserDetails = () => {
   const { email } = useParams<{ email: string }>();
   const { user, isLoading: isUserLoading } = useGetSingleUser(email as string);
   const { appliedPositions, isLoading: isPositionLoading } = useMyApplications(
     email as string
   );
-  const [votingActivity, setVotingActivity] = useState([
-    {
-      _id: "66c4cec6f48c0e04b70e5be7",
-      voter: {
-        _id: "66c2639740b0e4e2e46bb90a",
-        name: "Hamim2",
-        email: "hamim360net@gmail.com",
-        studentId: "F23010102",
-      },
-      email: "hamim360net@gmail.com",
-      candidate: {
-        _id: "66c42f1ead89940e7c71b679",
-        candidate: {
-          _id: "66c2636b40b0e4e2e46bb907",
-          name: "Hamim",
-          email: "hamim.me01@gmail.com",
-          studentId: "F23010105",
-          photo:
-            "https://res.cloudinary.com/di7tqi9qi/image/upload/v1723886574/Hamim-hamim.me01%40gmail.com.jpg",
-        },
-        votes: 2,
-        message: "",
-      },
-      position: {
-        _id: "66c2657afc6df8422df67c01",
-        title: "Legal Advisor",
-        description: "Provide legal guidance and support.",
-        creator: {
-          _id: "66c2636b40b0e4e2e46bb907",
-          name: "Hamim",
-          email: "hamim.me01@gmail.com",
-          photo:
-            "https://res.cloudinary.com/di7tqi9qi/image/upload/v1723886574/Hamim-hamim.me01%40gmail.com.jpg",
-        },
-      },
-      createdAt: "2024-08-20T17:13:42.179Z",
-      updatedAt: "2024-08-20T17:13:42.179Z",
-      __v: 0,
-    },
-  ]);
+  const { userVotes: votingActivity } = useGetSingleUserVotes(email as string);
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -276,15 +244,22 @@ export default function UserDetails() {
                               </p>
                               <p>
                                 <CalendarDays className="w-4 h-4 inline-block mr-2" />{" "}
-                                Duration: {position.positionDetails.duration}
+                                end:{" "}
+                                {moment(
+                                  position.positionDetails.endTime
+                                ).format("MMM DD YYYY")}
                               </p>
                               {position.positionDetails.status === "live" && (
                                 <div className="flex items-center justify-between">
                                   <CountdownTimer
                                     startTime={
-                                      position.positionDetails.startTime
+                                      position?.positionDetails
+                                        ?.startTime as string
                                     }
-                                    endTime={position.positionDetails.endTime}
+                                    endTime={
+                                      position?.positionDetails
+                                        ?.endTime as string
+                                    }
                                     type="start"
                                   />
                                   <Link
@@ -301,7 +276,10 @@ export default function UserDetails() {
                                 "pending" && (
                                 <CountdownTimer
                                   startTime={moment().format()}
-                                  endTime={position.positionDetails.startTime}
+                                  endTime={
+                                    position?.positionDetails
+                                      ?.startTime as string
+                                  }
                                   type="end"
                                 />
                               )}
@@ -420,7 +398,7 @@ export default function UserDetails() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {votingActivity.map((vote) => (
+                    {votingActivity?.map((vote) => (
                       <Card key={vote._id} className="overflow-hidden">
                         <CardHeader className="bg-gradient-to-r from-green-500 to-teal-500 text-white">
                           <CardTitle>{vote.position.title}</CardTitle>
@@ -448,20 +426,20 @@ export default function UserDetails() {
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-12 h-12">
                                   <AvatarImage
-                                    src={vote.position.creator.photo}
-                                    alt={vote.position.creator.name}
+                                    src={vote?.position?.creator?.photo}
+                                    alt={vote?.position?.creator?.name}
                                   />
                                   <AvatarFallback>
-                                    {vote.position.creator.name.charAt(0)}
+                                    {vote?.position?.creator?.name}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <p>{vote.position.creator.name}</p>
-                                  <p>{vote.position.creator.email}</p>
+                                  <p>{vote?.position?.creator?.name}</p>
+                                  <p>{vote?.position?.creator?.email}</p>
                                 </div>
                               </div>
                               <Link
-                                to={`/admin-dashboard/user-management/user-details/${vote.position.creator.email}`}
+                                to={`/admin-dashboard/user-management/user-details/${vote?.position?.creator?.email}`}
                               >
                                 <Button size="sm" variant="ghost">
                                   See Details <User className="w-4 h-4 ml-2" />
@@ -476,21 +454,21 @@ export default function UserDetails() {
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-14 h-14">
                                   <AvatarImage
-                                    src={vote.candidate.candidate.photo}
-                                    alt={vote.candidate.candidate.name}
+                                    src={vote?.candidate?.candidate?.photo}
+                                    alt={vote?.candidate?.candidate?.name}
                                   />
                                   <AvatarFallback>
-                                    {vote.candidate.candidate.name.charAt(0)}
+                                    {vote?.candidate?.candidate?.name}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <p>{vote.candidate.candidate.name}</p>
-                                  <p>{vote.candidate.candidate.email}</p>
-                                  <p>{vote.candidate.candidate.studentId}</p>
+                                  <p>{vote?.candidate?.candidate?.name}</p>
+                                  <p>{vote?.candidate?.candidate?.email}</p>
+                                  <p>{vote?.candidate?.candidate?.studentId}</p>
                                 </div>
                               </div>
                               <Link
-                                to={`/admin-dashboard/user-management/user-details/${vote.candidate.candidate.email}`}
+                                to={`/admin-dashboard/user-management/user-details/${vote?.candidate?.candidate?.email}`}
                               >
                                 <Button size="sm" variant="ghost">
                                   Candidate Details{" "}
@@ -518,4 +496,6 @@ export default function UserDetails() {
       )}
     </div>
   );
-}
+};
+
+export default UserDetails;

@@ -1,16 +1,16 @@
-import { TPosition } from "@/types/positions";
+import { IPosition, TPosition } from "@/types/positions";
 
 type CategorizedPositions = {
-  livePositions: Partial<TPosition>[];
-  notStartedOrExpiredPositions: Partial<TPosition>[];
+  livePositions: TPosition[] & IPosition[];
+  notStartedOrExpiredPositions: TPosition[] & IPosition[];
 };
 
 export const sortAndCategorizePositions = (
-  positions: Partial<TPosition>[]
+  positions: TPosition[] & IPosition[]
 ): CategorizedPositions => {
   const now = new Date().getTime();
-  const livePositions: Partial<TPosition>[] = [];
-  const notStartedOrExpiredPositions: Partial<TPosition>[] = [];
+  const livePositions: TPosition[] & IPosition[] = [];
+  const notStartedOrExpiredPositions: TPosition[] & IPosition[] = [];
 
   positions.forEach((position) => {
     if (!position.endTime || !position.startTime) return; // Skip if required properties are missing

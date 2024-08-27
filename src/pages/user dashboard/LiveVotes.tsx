@@ -19,7 +19,7 @@ import { useMutation } from "@tanstack/react-query";
 import useAxiosSecure from "@/hooks/useAxiosSecure";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
-import { ErrorResponse } from "@/types/positions";
+import { ErrorResponse, IPosition, TPosition } from "@/types/positions";
 import useCustomState from "@/hooks/useCustomState";
 import { TVoteCreate } from "@/types/vote";
 import { useGetMyVotes } from "@/hooks/useVotes";
@@ -111,7 +111,7 @@ const LiveVotes = () => {
   }
 
   const { livePositions, notStartedOrExpiredPositions } =
-    sortAndCategorizePositions(positions || []);
+    sortAndCategorizePositions((positions as TPosition[] & IPosition[]) || []);
 
   return (
     <>
