@@ -93,7 +93,7 @@ const VoteDetails: React.FC = () => {
             <p className="text-sm opacity-75">{creator.email}</p>
           </div>
         </div>
-        <Link to={`/creator-details/${position?._id}`} className="block mt-4">
+        <Link to={`/admin-dashboard/user-management/user-details/${position?._id}`} className="block mt-4">
           <Button variant="secondary" className="w-full">
             See Full Details
           </Button>

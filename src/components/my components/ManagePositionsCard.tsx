@@ -2,7 +2,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -57,7 +56,7 @@ const ManagePositionsCard = ({
     return { total, approved, rejected, pending };
   };
   const candidateCounts = getCandidateCounts(position?.candidates);
-
+  console.log(position)
   return (
     <>
       <Card
@@ -200,7 +199,7 @@ const ManagePositionsCard = ({
             {["all", "approved", "pending", "rejected"].map(
               (candidateStatus, index) => (
                 <TabsContent key={index} value={candidateStatus}>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                  <div className="space-y-2 max-h-64 pb-4 overflow-y-auto">
                     {position?.candidates
                       .filter(
                         (candidate) =>
@@ -220,7 +219,6 @@ const ManagePositionsCard = ({
             )}
           </Tabs>
         </CardContent>
-        <CardFooter className="flex justify-between"></CardFooter>
       </Card>
       <MPGoLiveDialog
         open={isGoLiveDialogOpen}

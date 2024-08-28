@@ -65,6 +65,7 @@ const CreatePosition = () => {
       endTime: moment(data.endTime).format(),
       creator: user?._id as string,
     };
+    console.log(formattedData);
     toast.promise(createPositionMutation.mutateAsync(formattedData), {
       loading: "Creating position...",
       success: "Position created successfully!",
@@ -132,8 +133,9 @@ const CreatePosition = () => {
                         );
                       },
                       beforeCurrentDate: (value) => {
+                        console.log(value);
                         return (
-                          moment(value).isBefore(moment(new Date())) ||
+                          moment(new Date(value)).isAfter(new Date()) ||
                           "Start date must be after current date"
                         );
                       },
