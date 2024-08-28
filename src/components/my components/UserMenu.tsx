@@ -1,18 +1,36 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import useCustomState from "@/hooks/useCustomState";
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, LogOutIcon } from "lucide-react";
-import { FaVoteYea, FaHistory, FaUserAltSlash } from "react-icons/fa";
+import {
+  FaVoteYea,
+  FaHistory,
+  FaUserAltSlash,
+  FaFileAlt,
+} from "react-icons/fa";
 import { GiPodiumWinner } from "react-icons/gi";
 import { RiProfileFill } from "react-icons/ri";
 import { MdOutlineArchive } from "react-icons/md";
 import { GrRadialSelected } from "react-icons/gr";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import useCustomState from "@/hooks/useCustomState";
+import { AxiosError } from "axios";
+import { ErrorResponse } from "@/types/positions";
 
-const menuItems = {
+interface MenuItem {
+  to?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  subMenu?: {
+    to: string;
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+  }[];
+}
+
+const menuItems: Record<string, MenuItem[]> = {
   user: [
     {
       to: "/dashboard",
@@ -36,12 +54,17 @@ const menuItems = {
       ],
     },
     {
-      to: "positions",
+      to: "/dashboard/positions",
       icon: GiPodiumWinner,
       label: "Positions",
     },
     {
-      to: "voting-history",
+      to: "/dashboard/my-applications",
+      icon: FaFileAlt,
+      label: "My Applications",
+    },
+    {
+      to: "/dashboard/voting-history",
       icon: FaHistory,
       label: "Voting History",
     },
@@ -93,18 +116,19 @@ const menuItems = {
   ],
 };
 
-const UserMenu = () => {
+const UserMenu: React.FC = () => {
   const { user } = useUserInfo();
   const { isSidebarOpen } = useCustomState();
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     try {
       await toast.promise(logout(), {
         loading: "Logging out...",
         success: "Logout successful!",
-        error: (error: any) =>
+        error: (error: AxiosError<ErrorResponse>) =>
           error.response?.data?.message || "Logout failed!",
       });
 
@@ -128,7 +152,7 @@ const UserMenu = () => {
       <div className="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
         <ul className="space-y-2 font-medium">
           {currentMenuItems.map((item, index) => (
-            <MenuItem key={index} {...item} />
+            <MenuItem key={index} {...item} currentPath={location.pathname} />
           ))}
         </ul>
       </div>
@@ -145,18 +169,8 @@ const UserMenu = () => {
   );
 };
 
-export default UserMenu;
-
-interface MenuItemProps {
-  to?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  children?: React.ReactNode;
-  subMenu?: {
-    to: string;
-    icon: React.ComponentType<{ className?: string }>;
-    label: string;
-  }[];
+interface MenuItemProps extends MenuItem {
+  currentPath: string;
 }
 
 const MenuItem: React.FC<MenuItemProps> = ({
@@ -164,13 +178,30 @@ const MenuItem: React.FC<MenuItemProps> = ({
   icon: Icon,
   label,
   subMenu,
+  currentPath,
 }) => {
+  const isActive =
+    to === currentPath ||
+    (subMenu && subMenu.some((item) => item.to === currentPath));
+
   return (
     <li>
       {subMenu ? (
         <details className="group [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between rounded-lg p-2 text-gray-900 dark:text-white hover:bg-gray-100 hover:text-gray-700">
-            <Icon className="text-gray-900" />
+          <summary
+            className={`flex cursor-pointer items-center justify-between rounded-lg p-2 ${
+              isActive
+                ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-700 dark:text-white"
+                : "text-gray-900 dark:text-white hover:bg-gray-100 hover:text-gray-700"
+            }`}
+          >
+            <Icon
+              className={
+                isActive
+                  ? "text-indigo-700 dark:text-white"
+                  : "text-gray-500 dark:text-gray-400"
+              }
+            />
             <span className="flex-1 ms-3 whitespace-nowrap">{label}</span>
             <span className="shrink-0 transition duration-300 group-open:-rotate-180">
               <ChevronDown size={20} />
@@ -178,16 +209,26 @@ const MenuItem: React.FC<MenuItemProps> = ({
           </summary>
           <ul className="mt-2 space-y-1 px-4">
             {subMenu.map((subItem, index) => (
-              <SubMenuItem key={index} {...subItem} />
+              <SubMenuItem key={index} {...subItem} currentPath={currentPath} />
             ))}
           </ul>
         </details>
       ) : (
         <Link
           to={to || "#"}
-          className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+          className={`flex items-center w-full p-2 text-sm transition-colors duration-200 rounded-lg ${
+            isActive
+              ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-700 dark:text-white"
+              : "text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+          }`}
         >
-          <Icon className="text-gray-900" />
+          <Icon
+            className={`w-5 h-5 mr-2 ${
+              isActive
+                ? "text-indigo-700 dark:text-white"
+                : "text-gray-500 dark:text-gray-400"
+            }`}
+          />
           <span className="flex-1 ms-3 whitespace-nowrap">{label}</span>
         </Link>
       )}
@@ -199,18 +240,38 @@ interface SubMenuItemProps {
   to: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  currentPath: string;
 }
 
-const SubMenuItem: React.FC<SubMenuItemProps> = ({ to, icon: Icon, label }) => {
+const SubMenuItem: React.FC<SubMenuItemProps> = ({
+  to,
+  icon: Icon,
+  label,
+  currentPath,
+}) => {
+  const isActive = to === currentPath;
+
   return (
     <li>
       <Link
         to={to}
-        className="rounded-lg px-4 py-2 text-sm font-medium text-gray-500 flex items-center gap-2 hover:bg-gray-100 hover:text-gray-700"
+        className={`flex items-center w-full p-2 text-sm transition-colors duration-200 rounded-lg pl-11 ${
+          isActive
+            ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-700 dark:text-white"
+            : "text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+        }`}
       >
-        <Icon className="text-gray-900" />
+        <Icon
+          className={`w-4 h-4 mr-2 ${
+            isActive
+              ? "text-indigo-700 dark:text-white"
+              : "text-gray-500 dark:text-gray-400"
+          }`}
+        />
         {label}
       </Link>
     </li>
   );
 };
+
+export default UserMenu;
