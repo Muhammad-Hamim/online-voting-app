@@ -93,7 +93,10 @@ const VoteDetails: React.FC = () => {
             <p className="text-sm opacity-75">{creator.email}</p>
           </div>
         </div>
-        <Link to={`/admin-dashboard/user-management/user-details/${position?._id}`} className="block mt-4">
+        <Link
+          to={`/admin-dashboard/user-management/user-details/${creator?.email}`}
+          className="block mt-4"
+        >
           <Button variant="secondary" className="w-full">
             See Full Details
           </Button>
@@ -288,9 +291,7 @@ const VoteDetails: React.FC = () => {
                         src={leadingCandidate.photo}
                         alt={leadingCandidate.name}
                       />
-                      <AvatarFallback>
-                        {leadingCandidate.name}
-                      </AvatarFallback>
+                      <AvatarFallback>{leadingCandidate.name}</AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="text-2xl font-bold">

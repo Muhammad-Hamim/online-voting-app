@@ -77,7 +77,6 @@ const useMyApplications = (email: string) => {
 
   return {
     appliedPositions,
-
     isLoading,
     isError,
     refetch,
