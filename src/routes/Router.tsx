@@ -20,6 +20,7 @@ import UserDetails from "@/pages/admin dashboard/UserDetails";
 import CreatePosition from "@/pages/admin dashboard/CreatePosition";
 import ManagePositions from "@/pages/admin dashboard/ManagePositions";
 import AdminRoute from "./AdminRoute";
+import MyAppliedPositions from "@/pages/user dashboard/MyAppliedPositions";
 
 const router = createBrowserRouter([
   {
@@ -87,6 +88,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Positions />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "my-applications",
+        element: (
+          <PrivateRoute>
+            <MyAppliedPositions />
           </PrivateRoute>
         ),
       },

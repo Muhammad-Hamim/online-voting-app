@@ -10,6 +10,7 @@ export type TCandidate = {
   status: "applied" | "approved" | "rejected";
   photo?: string;
   message?: string;
+  createdAt?: string;
 };
 export type TCandidateApplication = {
   candidate: string;
