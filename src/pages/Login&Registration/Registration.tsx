@@ -10,18 +10,20 @@ import { Link, useNavigate } from "react-router-dom";
 import profilePhoto from "@/assets/profile/profile.jpg";
 import { AxiosError } from "axios";
 import { ErrorResponse } from "@/types/positions";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 type Inputs = {
   name: string;
   email: string;
   studentId: string;
+  password: string;
   photo?: FileList;
 };
 
 const Registration: React.FC = () => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const navigate = useNavigate();
-
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -40,6 +42,7 @@ const Registration: React.FC = () => {
     },
   });
 
+  const handleTogglePasswordVisibility = () => setShowPassword((prev) => !prev);
   const handleRegistration: SubmitHandler<Inputs> = (data) => {
     const formData = new FormData();
     // Append user data as a JSON string
@@ -48,6 +51,7 @@ const Registration: React.FC = () => {
       JSON.stringify({
         name: data.name,
         email: data.email,
+        password: data.password,
         studentId: data.studentId,
       })
     );
@@ -55,10 +59,9 @@ const Registration: React.FC = () => {
     if (data.photo && data.photo[0]) {
       formData.append("photo", data.photo[0]);
     }
-
     toast.promise(registrationMutation.mutateAsync(formData), {
       loading: "Registering...",
-      success: "Registration successful! Please check your email for password.",
+      success: "Registration successful! Please log in.",
       error: (error: AxiosError<ErrorResponse>) =>
         error.response?.data?.message || "Registration failed!",
     });
@@ -130,6 +133,38 @@ const Registration: React.FC = () => {
                 Student ID is required
               </p>
             )}
+          </div>
+          <div>
+            <label htmlFor="password" className="block font-medium mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <Input
+                id="password"
+                {...register("password", { required: true })}
+                type={showPassword ? "text" : "password"}
+                placeholder="********"
+                className="w-full rounded-full bg-[#E1ECF4] px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-800"
+              />
+              {errors.password && (
+                <p role="alert" className="text-red-400 text-[14px] mt-3">
+                  password is required
+                </p>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={handleTogglePasswordVisibility}
+              >
+                {showPassword ? (
+                  <EyeOffIcon className="h-4 w-4 text-indigo-600" />
+                ) : (
+                  <EyeIcon className="h-4 w-4 text-indigo-600" />
+                )}
+              </Button>
+            </div>
           </div>
           <div>
             <label htmlFor="photo" className="block font-medium mb-1">

@@ -67,11 +67,12 @@ export default function Profile() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setPhotoPreview(reader.result as string);
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
       reader.readAsDataURL(file);
     }
   };
-
   const { register: registerProfile, handleSubmit: handleSubmitProfile } =
     useForm<ProfileUpdateInputs>();
 
@@ -95,8 +96,15 @@ export default function Profile() {
     if (data.email) jsonData.email = data.email;
     if (data.studentId) jsonData.studentId = data.studentId;
     formData.append("data", JSON.stringify(jsonData));
-    if (data.photo && data.photo[0]) formData.append("photo", data.photo[0]);
-
+    // Append photo file if it exists
+    // Handle file upload
+    if (data.photo && data.photo.length > 0) {
+      const file = data.photo[0]; // Get the first file
+      console.log("File to upload:", file); // Check the file object
+      formData.append("photo", file);
+    } else {
+      console.log("No file selected");
+    }
     toast.promise(updateProfileMutation.mutateAsync(formData), {
       loading: "Updating profile...",
       success: "Profile updated successfully!",
@@ -270,18 +278,18 @@ export default function Profile() {
               <Label htmlFor="photo" className="text-indigo-800">
                 Profile Photo
               </Label>
-              <div className="flex items-center gap-4">
+              <div className="flex relative items-center gap-4">
                 <Input
                   id="photo"
                   type="file"
                   accept="image/*"
                   {...registerProfile("photo")}
                   onChange={handlePhotoUpload}
-                  className="hidden"
+                  className="w-24"
                 />
                 <Label
                   htmlFor="photo"
-                  className="cursor-pointer flex items-center justify-center w-24 h-24 rounded-full bg-indigo-100 hover:bg-indigo-200 transition-colors"
+                  className="cursor-pointer absolute left-0 top-0 flex items-center justify-center w-24 h-24 rounded-full bg-indigo-100 hover:bg-indigo-200 transition-colors"
                 >
                   <Camera className="h-8 w-8 text-indigo-600" />
                 </Label>
