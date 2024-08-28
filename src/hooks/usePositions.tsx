@@ -167,10 +167,21 @@ const useAllPositions = (searchTerm: string) => {
     ...rest,
   };
 };
+const useGetCreatedPositions = (creatorId: string) => {
+  const { positions: createdPositions, ...rest } = usePositions(
+    `/positions/get-positions-with-candidates-and-voters?sort=-createdAt&creator.email=${creatorId}`,
+    "created-positions"
+  );
+  return {
+    createdPositions,
+    ...rest,
+  };
+};
 
 export {
   useAllPositions,
   useGetPositionsWithCandidates,
+  useGetCreatedPositions,
   useUpdatePositionStatus,
   useUpdatePositionInfo,
 };

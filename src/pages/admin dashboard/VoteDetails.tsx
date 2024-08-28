@@ -289,7 +289,7 @@ const VoteDetails: React.FC = () => {
                         alt={leadingCandidate.name}
                       />
                       <AvatarFallback>
-                        {leadingCandidate.name[0]}
+                        {leadingCandidate.name}
                       </AvatarFallback>
                     </Avatar>
                     <div>
