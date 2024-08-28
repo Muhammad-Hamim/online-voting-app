@@ -440,7 +440,9 @@ const UserDetails: React.FC = () => {
     useGetCreatedPositions(email as string);
 
   const stats = useMemo(() => {
-    const totalCreatedPositions = createdPositions?.length || 0;
+    const totalCreatedPositions =
+      createdPositions?.filter((p: TPosition) => p.creator?.email === email)
+        ?.length || 0;
     const totalAppliedPositions = appliedPositions?.length || 0;
     const totalVotesReceived =
       appliedPositions?.reduce((sum, pos) => sum + pos.votes, 0) || 0;
@@ -472,7 +474,7 @@ const UserDetails: React.FC = () => {
         icon: <Activity className="w-5 h-5" />,
       },
     ];
-  }, [createdPositions, appliedPositions, votingActivity]);
+  }, [createdPositions, appliedPositions, votingActivity, email]);
 
   if (isUserLoading || isPositionLoading || isCreatedPositionsLoading) {
     return (

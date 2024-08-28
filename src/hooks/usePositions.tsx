@@ -105,7 +105,7 @@ const usePositions = (endpoint: string, queryKey: string) => {
     isPending,
     isError,
     refetch,
-  } = useQuery<IPosition[] & TPosition[], Error>({
+  } = useQuery<(IPosition[] & TPosition[]) , Error>({
     queryKey: [queryKey],
     queryFn: () => fetchPositions(axiosSecure, endpoint),
     enabled: !!user,

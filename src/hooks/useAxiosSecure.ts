@@ -46,6 +46,11 @@ const useAxiosSecure = () => {
 
               // Retry the original request with the new token
               return axiosSecure(originalRequest);
+            } else {
+              toast.error("Failed to refresh token. Please log in again.");
+              await logout();
+              navigate("/");
+              return Promise.reject(error);
             }
           } catch (refreshError) {
             console.error("Token refresh failed:", refreshError);
