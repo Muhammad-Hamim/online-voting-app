@@ -31,7 +31,6 @@ const MPTerminatePositionDialog = ({
       status: newStatus,
       terminationMessage: newStatus === "terminated" ? terminationMessage : "",
     };
-    console.log(payload);
 
     updateStatusMutation.mutate(payload, {
       onSuccess: () => {

@@ -4,7 +4,7 @@ import { useMyApplications } from "@/hooks/useCandidates";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { IAppliedPositions } from "@/types/candidates";
 import { motion } from "framer-motion";
-import { Check, X, AlertTriangle, ChevronRight, Edit } from "lucide-react";
+import { Check, X, AlertTriangle, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,6 @@ const ApplicationCard = ({ application }: { application: IAppliedPositions }) =>
   const [editMessage, setEditMessage] = useState(application.message || "");
 
   const handleEditMessage = () => {
-    console.log("Updating message:", editMessage);
     setIsDialogOpen(false);
   };
 
@@ -37,7 +36,7 @@ const ApplicationCard = ({ application }: { application: IAppliedPositions }) =>
             {application.positionDetails.title}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Applied: {format(new Date(application.createdAt), "MMM d, yyyy")}
+            Applied: {format(new Date(application?.createdAt as string), "MMM d, yyyy")}
           </p>
         </div>
         <div className="flex items-center space-x-2">

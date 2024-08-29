@@ -56,7 +56,6 @@ const ManagePositionsCard = ({
     return { total, approved, rejected, pending };
   };
   const candidateCounts = getCandidateCounts(position?.candidates);
-  console.log(position)
   return (
     <>
       <Card

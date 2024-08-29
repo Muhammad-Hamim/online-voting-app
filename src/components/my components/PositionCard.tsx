@@ -50,7 +50,6 @@ const PositionCard: React.FC<PositionCardProps> = ({ position, refetch }) => {
     position.candidates.length === 1 && !position?.candidates[0].name
       ? 0
       : position.candidates.length;
-      console.log(position)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const isDeadlinePassed = moment().isAfter(deadline);
   const { user } = useUserInfo();

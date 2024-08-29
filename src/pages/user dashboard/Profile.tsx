@@ -100,10 +100,7 @@ export default function Profile() {
     // Handle file upload
     if (data.photo && data.photo.length > 0) {
       const file = data.photo[0]; // Get the first file
-      console.log("File to upload:", file); // Check the file object
       formData.append("photo", file);
-    } else {
-      console.log("No file selected");
     }
     toast.promise(updateProfileMutation.mutateAsync(formData), {
       loading: "Updating profile...",

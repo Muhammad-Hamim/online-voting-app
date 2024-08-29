@@ -1,30 +1,84 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { useMyApplications } from "@/hooks/useCandidates";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { IAppliedPositions } from "@/types/candidates";
-import { Clock, CheckCircle, XCircle, Edit, User, Mail, Calendar, Briefcase, Check, ArrowRight } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
+  Edit,
+  User,
+  Mail,
+  Calendar,
+  Briefcase,
+  Check,
+  ArrowRight,
+  MessageSquarePlus,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useMutation } from "@tanstack/react-query";
+import useAxiosSecure from "@/hooks/useAxiosSecure";
+import toast from "react-hot-toast";
+import { AxiosError } from "axios";
+import { ErrorResponse } from "@/types/positions";
 
 const statusIcons = {
   approved: <CheckCircle className="text-green-500" />,
   rejected: <XCircle className="text-red-500" />,
   applied: <Check className="text-yellow-500" />,
 };
-
-const ApplicationCard = ({ application }: { application: IAppliedPositions }) => {
-  const { positionDetails, creator, createdAt, status, message, votes } = application;
+type ApplicationCardProps = {
+  application: IAppliedPositions;
+  refetch: () => void;
+};
+const ApplicationCard = ({ application, refetch }: ApplicationCardProps) => {
+  const [axiosSecure] = useAxiosSecure();
+  const { positionDetails, creator, createdAt, status, message, votes } =
+    application;
   const [editMessage, setEditMessage] = useState(message);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  const updateMessageMutation = useMutation({
+    mutationFn: async ({ message }: { message: string }) => {
+      const response = await axiosSecure.patch(
+        `/candidates/update-message/${application._id}`,
+        { message }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
   const handleEditMessage = () => {
-    console.log("Updating message:", editMessage);
+    toast.promise(
+      updateMessageMutation.mutateAsync({ message: editMessage as string }),
+      {
+        loading: "Updating message...",
+        success: "Message updated successfully",
+        error: (error: AxiosError<ErrorResponse>) =>
+          error.response?.data?.message || "Failed to update message!",
+      }
+    );
     setIsDialogOpen(false);
   };
 
@@ -33,13 +87,18 @@ const ApplicationCard = ({ application }: { application: IAppliedPositions }) =>
       <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">{positionDetails.title}</h2>
-          <Badge variant="secondary" className="text-xs font-semibold px-3 py-1 rounded-full bg-white text-indigo-600">
+          <Badge
+            variant="secondary"
+            className="text-xs font-semibold px-3 py-1 rounded-full bg-white text-indigo-600"
+          >
             {positionDetails.status}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">{positionDetails.description}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+          {positionDetails.description}
+        </p>
 
         <div className="flex items-center mb-6 space-x-4">
           <Avatar className="h-12 w-12">
@@ -47,8 +106,12 @@ const ApplicationCard = ({ application }: { application: IAppliedPositions }) =>
             <AvatarFallback>{creator?.name}</AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-semibold flex items-center text-gray-800 dark:text-gray-200"><User className="w-4 h-4 mr-2" /> {creator.name}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center"><Mail className="w-4 h-4 mr-2" /> {creator.email}</p>
+            <p className="font-semibold flex items-center text-gray-800 dark:text-gray-200">
+              <User className="w-4 h-4 mr-2" /> {creator.name}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+              <Mail className="w-4 h-4 mr-2" /> {creator.email}
+            </p>
           </div>
         </div>
 
@@ -56,29 +119,54 @@ const ApplicationCard = ({ application }: { application: IAppliedPositions }) =>
           <div className="flex items-center text-sm bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
             <Calendar className="text-indigo-500 mr-2 w-5 h-5" />
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Applied</p>
-              <p className="font-medium text-gray-800 dark:text-gray-200">{format(new Date(createdAt as string), "MMM d, yyyy")}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Applied
+              </p>
+              <p className="font-medium text-gray-800 dark:text-gray-200">
+                {format(new Date(createdAt as string), "MMM d, yyyy")}
+              </p>
             </div>
           </div>
           <div className="flex items-center text-sm bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
             <Briefcase className="text-indigo-500 mr-2 w-5 h-5" />
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Created</p>
-              <p className="font-medium text-gray-800 dark:text-gray-200">{format(new Date(positionDetails.createdAt as string), "MMM d, yyyy")}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Created
+              </p>
+              <p className="font-medium text-gray-800 dark:text-gray-200">
+                {format(
+                  new Date(positionDetails.createdAt as string),
+                  "MMM d, yyyy"
+                )}
+              </p>
             </div>
           </div>
           <div className="flex items-center text-sm bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
             <Clock className="text-indigo-500 mr-2 w-5 h-5" />
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Start Date</p>
-              <p className="font-medium text-gray-800 dark:text-gray-200">{format(new Date(positionDetails?.startTime as string), "MMM d, yyyy")}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Start Date
+              </p>
+              <p className="font-medium text-gray-800 dark:text-gray-200">
+                {format(
+                  new Date(positionDetails?.startTime as string),
+                  "MMM d, yyyy"
+                )}
+              </p>
             </div>
           </div>
           <div className="flex items-center text-sm bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
             <Clock className="text-indigo-500 mr-2 w-5 h-5" />
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">End Date</p>
-              <p className="font-medium text-gray-800 dark:text-gray-200">{format(new Date(positionDetails?.endTime as string), "MMM d, yyyy")}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                End Date
+              </p>
+              <p className="font-medium text-gray-800 dark:text-gray-200">
+                {format(
+                  new Date(positionDetails?.endTime as string),
+                  "MMM d, yyyy"
+                )}
+              </p>
             </div>
           </div>
         </div>
@@ -86,50 +174,91 @@ const ApplicationCard = ({ application }: { application: IAppliedPositions }) =>
         <div className="flex items-center justify-between mb-6 bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
           <div className="flex items-center">
             {statusIcons[status]}
-            <span className="ml-2 font-semibold capitalize text-gray-800 dark:text-gray-200">{status}</span>
+            <span className="ml-2 font-semibold capitalize text-gray-800 dark:text-gray-200">
+              {status}
+            </span>
           </div>
-          <Button variant="outline" size="sm" className="text-indigo-600 border-indigo-600 hover:bg-indigo-50">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-indigo-600 border-indigo-600 hover:bg-indigo-50"
+          >
             View Details <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
 
-        {message && (
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Your Message</h3>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-indigo-600 border-indigo-600 hover:bg-indigo-50">
-                    <Edit className="w-4 h-4 mr-2" /> Edit
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Edit Message</DialogTitle>
-                  </DialogHeader>
-                  <Textarea
-                    value={editMessage}
-                    onChange={(e) => setEditMessage(e.target.value)}
-                    className="min-h-[120px] mt-4"
-                  />
-                  <Button onClick={handleEditMessage} className="mt-4 bg-indigo-600 hover:bg-indigo-700">
-                    Save Changes
-                  </Button>
-                </DialogContent>
-              </Dialog>
-            </div>
-            <p className="text-sm italic text-gray-600 dark:text-gray-300">{message}</p>
+        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              {message ? "Your Message" : "No Message"}
+            </h3>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-indigo-600 border-indigo-600 hover:bg-indigo-50"
+                >
+                  {message ? (
+                    <>
+                      <Edit className="w-4 h-4 mr-2" /> Edit
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquarePlus className="w-4 h-4 mr-2" /> Add Message
+                    </>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {message ? "Edit Message" : "Add Message"}
+                  </DialogTitle>
+                </DialogHeader>
+                <Textarea
+                  value={editMessage}
+                  onChange={(e) => setEditMessage(e.target.value)}
+                  className="min-h-[120px] mt-4"
+                  placeholder="Enter your message here..."
+                />
+                <Button
+                  onClick={handleEditMessage}
+                  className="mt-4 bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Save Changes
+                </Button>
+              </DialogContent>
+            </Dialog>
           </div>
-        )}
+          {message ? (
+            <p className="text-sm italic text-gray-600 dark:text-gray-300">
+              {message}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No message added yet.
+            </p>
+          )}
+        </div>
       </CardContent>
       <CardFooter className="bg-gray-50 dark:bg-gray-700 p-6">
         <div className="w-full">
           <div className="flex justify-between text-sm mb-3">
-            <span className="font-medium text-gray-700 dark:text-gray-300">Votes: {votes}</span>
-            <span className="font-medium text-gray-700 dark:text-gray-300">Max Votes: {positionDetails.maxVotes}</span>
-            <span className="font-medium text-gray-700 dark:text-gray-300">Max Candidates: {positionDetails.maxCandidates}</span>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Votes: {votes}
+            </span>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Max Votes: {positionDetails.maxVotes}
+            </span>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Max Candidates: {positionDetails.maxCandidates}
+            </span>
           </div>
-          <Progress value={(votes / (positionDetails?.maxVotes as number)) * 100} className="h-2 rounded-full bg-gray-200 dark:bg-gray-600">
+          <Progress
+            value={(votes / (positionDetails?.maxVotes as number)) * 100}
+            className="h-2 rounded-full bg-gray-200 dark:bg-gray-600"
+          >
             <div className="h-full bg-indigo-600 rounded-full"></div>
           </Progress>
         </div>
@@ -140,11 +269,15 @@ const ApplicationCard = ({ application }: { application: IAppliedPositions }) =>
 
 export default function MyAppliedPositions() {
   const { user, isLoading: isUserLoading } = useUserInfo();
-  const { appliedPositions, isLoading: isAppliedPositionLoading } = useMyApplications(user?.email as string);
+  const {
+    appliedPositions,
+    isLoading: isAppliedPositionLoading,
+    refetch,
+  } = useMyApplications(user?.email as string);
 
   if (isUserLoading || isAppliedPositionLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="flex justify-center items-center h-screen bg-transparent">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-600"></div>
       </div>
     );
@@ -157,7 +290,11 @@ export default function MyAppliedPositions() {
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {appliedPositions.map((application) => (
-          <ApplicationCard key={application._id} application={application} />
+          <ApplicationCard
+            key={application._id}
+            application={application}
+            refetch={refetch}
+          />
         ))}
       </div>
     </div>

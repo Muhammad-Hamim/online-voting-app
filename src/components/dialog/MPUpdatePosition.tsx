@@ -39,7 +39,6 @@ const MPUpdatePositionDialog = ({
     if (position.status !== "pending") {
       return toast.error("You can only update a pending position.");
     }
-    console.log(data);
     if (data.startTime) {
       data.startTime = moment(data.startTime).format();
     }
