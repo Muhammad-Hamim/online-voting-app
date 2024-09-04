@@ -43,21 +43,20 @@ const CreateAdminAccount: React.FC = () => {
     }
     toast.promise(registrationMutation.mutateAsync(formData), {
       loading: "Registering...",
-      success: () => (
+      success: (
         <div>
-          <p>Registration successful!</p>
-          <p>An email with your password has been sent to your inbox.</p>
+          <p>
+            Registration successful! An email with password will be sent to your
+            inbox.
+          </p>
           <p>
             If you do not receive the email, please wait some time and then use
             the
-            <Link to="/forgot-password" className="text-blue-500 underline">
-              'Forgot Password'
-            </Link>
+            <span className="text-blue-500 underline"> Forgot Password </span>
             option to reset your password.
           </p>
         </div>
       ),
-
       error: (error: AxiosError<ErrorResponse>) =>
         error.response?.data?.message || "Registration failed!",
     });
@@ -124,14 +123,14 @@ const CreateAdminAccount: React.FC = () => {
             </label>
             <Input
               id="student-id"
-              {...register("studentId", { required: false })}
+              {...register("studentId")}
               type="text"
               placeholder="F23010101"
               className="w-full rounded-full bg-[#E1ECF4] px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-800"
             />
             {errors.studentId && (
               <p role="alert" className="text-red-400 text-[14px] mt-3">
-                Student ID is required
+                {errors.studentId.message}
               </p>
             )}
           </div>
