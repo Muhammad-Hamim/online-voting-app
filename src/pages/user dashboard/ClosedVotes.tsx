@@ -24,8 +24,7 @@ import { Hash, Mail, Vote } from "lucide-react";
 const ClosedVotes = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [positionId, setPositionId] = useState<string | null>(null);
-  const { closedPositionsWithApprovedCandidates: positions, isLoading } =
-    useGetPositionsWithCandidates();
+  const { positions, isLoading } = useGetPositionsWithCandidates();
 
   const candidates = positions?.find(
     (position) => position._id === positionId
@@ -63,6 +62,7 @@ const ClosedVotes = () => {
             <ClosedVoteCard
               key={position._id}
               id={position._id}
+              status={position.status}
               title={position.title}
               description={position.description}
               winner={position?.winner as ICandidate}
@@ -100,9 +100,7 @@ const ClosedVotes = () => {
                           src={candidate.photo}
                           alt={candidate.name}
                         />
-                        <AvatarFallback>
-                          {candidate.name}
-                        </AvatarFallback>
+                        <AvatarFallback>{candidate.name}</AvatarFallback>
                       </Avatar>
                       <Badge
                         className={`${getStatusColor(

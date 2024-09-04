@@ -51,7 +51,7 @@ const LiveVoteCard = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md mx-auto"
+        className="w-full max-w-lg mx-auto"
       >
         <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-gray-200 to-gray-300 rounded-bl-full opacity-20 z-0"></div>
@@ -74,7 +74,7 @@ const LiveVoteCard = ({
                 {status}
               </motion.span>
             </div>
-            <CardTitle className="text-3xl font-extrabold text-gray-800 mb-2">
+            <CardTitle className="xl:text-2xl font-extrabold text-gray-800 mb-2">
               {title}
             </CardTitle>
             {description && (
@@ -84,7 +84,7 @@ const LiveVoteCard = ({
             )}
           </CardHeader>
           <CardContent className="pt-6 relative z-10">
-            <div className="bg-white bg-opacity-70 backdrop-blur-sm rounded-xl p-6 shadow-inner">
+            <div className="bg-white bg-opacity-70 backdrop-blur-sm rounded-xl p-4 shadow-inner">
               <p className="text-sm font-semibold mb-4 text-center text-gray-700">
                 Time Remaining
               </p>
@@ -92,7 +92,7 @@ const LiveVoteCard = ({
                 {Object.entries(timeLeft).map(([unit, value], index) => (
                   <React.Fragment key={unit}>
                     <motion.div
-                      className="bg-gradient-to-br from-gray-600 to-gray-700 p-4 rounded-xl text-white shadow-md flex flex-col items-center"
+                      className="bg-gradient-to-br from-gray-600 to-gray-700 p-2 rounded-xl text-white shadow-md"
                       initial={{ rotateY: 0 }}
                       animate={{ rotateY: 360 }}
                       transition={{
@@ -102,10 +102,12 @@ const LiveVoteCard = ({
                         repeatDelay: 20,
                       }}
                     >
-                      <span className="text-2xl font-bold">
+                      <span className="xxl:text-2xl font-bold">
                         {String(value).padStart(2, "0")}
                       </span>
-                      <span className="text-xs mt-1">{unit}</span>
+                      <span className="text-xs text-gray-300 dark:text-gray-400 ml-1">
+                        {unit.charAt(0)}
+                      </span>
                     </motion.div>
                   </React.Fragment>
                 ))}

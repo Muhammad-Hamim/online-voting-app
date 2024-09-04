@@ -7,7 +7,7 @@ interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
+const SuperAdminRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   const { user, isLoading } = useUserInfo();
   const { pathname } = useLocation();
 
@@ -30,15 +30,14 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     );
   }
 
-  if (!user) {
+  if (!user || user.role !== "superAdmin") {
     return <Navigate to={"/"} state={pathname} />;
   }
-
-  if (user) {
+  if (user.role === "superAdmin") {
     return children;
   }
 
   return <Navigate to="/" state={{ from: location }} replace />;
 };
 
-export default PrivateRoute;
+export default SuperAdminRoute;

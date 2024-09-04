@@ -105,11 +105,12 @@ const usePositions = (endpoint: string, queryKey: string) => {
     isPending,
     isError,
     refetch,
-  } = useQuery<(IPosition[] & TPosition[]) , Error>({
+  } = useQuery<IPosition[] & TPosition[]>({
     queryKey: [queryKey],
     queryFn: () => fetchPositions(axiosSecure, endpoint),
     enabled: !!user,
     retry: false,
+    staleTime: 0, // Data will be considered stale immediately
   });
 
   return {
@@ -128,14 +129,8 @@ const useGetPositionsWithCandidates = () => {
     "/positions/get-positions-with-candidates?sort=-createdAt",
     "positions-with-candidates"
   );
-
-  const closedPositionsWithApprovedCandidates = positions?.filter(
-    (position) => position.status === "closed"
-  );
-
   return {
     positions,
-    closedPositionsWithApprovedCandidates,
     ...rest,
   };
 };

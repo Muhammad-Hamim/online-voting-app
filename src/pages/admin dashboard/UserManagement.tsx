@@ -319,7 +319,7 @@ const UserManagement = () => {
                         <SelectValue placeholder={user.status} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in-progress">In-progress</SelectItem>
                         <SelectItem value="active">Active</SelectItem>
                         <SelectItem value="blocked">Blocked</SelectItem>
                       </SelectContent>

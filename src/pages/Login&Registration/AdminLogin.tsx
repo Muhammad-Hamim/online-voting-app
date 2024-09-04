@@ -1,35 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link, useNavigate } from "react-router-dom";
+import { Link} from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import axiosInstance from "@/api/axiosInstance";
 import { AxiosError } from "axios";
 import { ErrorResponse } from "@/types/positions";
+import useLogin from "@/hooks/useLogin";
 
 type Inputs = { email: string; password: string };
 
-const Login = () => {
-  const navigate = useNavigate();
+const AdminLogin = () => {
   const {
     register,
     formState: { errors },
     handleSubmit,
   } = useForm<Inputs>();
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: Inputs) => {
-      const response = await axiosInstance.post("/auth/admin-login", data);
-      const token = response.data.data.accessToken;
-      localStorage.setItem("token", token);
-      return response.data;
-    },
-    onSuccess: () => {
-      navigate("/dashboard"); // Replace with your dashboard route
-    },
-  });
+  const loginMutation = useLogin("/auth/admin-login", "/dashboard");
 
   const handleLogin: SubmitHandler<Inputs> = (data) => {
     toast.promise(loginMutation.mutateAsync(data), {
@@ -105,4 +93,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminLogin;

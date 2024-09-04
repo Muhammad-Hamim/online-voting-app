@@ -7,29 +7,25 @@ import { Link } from "react-router-dom";
 import profilePhoto from "@/assets/profile/profile.jpg";
 import { AxiosError } from "axios";
 import { ErrorResponse } from "@/types/positions";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
 import useRegister from "@/hooks/useRegistration";
 
 type Inputs = {
   name: string;
   email: string;
-  studentId: string;
-  password: string;
+  studentId?: string;
   photo?: FileList;
 };
 
-const Registration: React.FC = () => {
+const CreateAdminAccount: React.FC = () => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<Inputs>();
 
-  const registrationMutation = useRegister("/users/create-user");
+  const registrationMutation = useRegister("/users/create-admin");
 
-  const handleTogglePasswordVisibility = () => setShowPassword((prev) => !prev);
   const handleRegistration: SubmitHandler<Inputs> = (data) => {
     const formData = new FormData();
     // Append user data as a JSON string
@@ -38,7 +34,6 @@ const Registration: React.FC = () => {
       JSON.stringify({
         name: data.name,
         email: data.email,
-        password: data.password,
         studentId: data.studentId,
       })
     );
@@ -48,7 +43,21 @@ const Registration: React.FC = () => {
     }
     toast.promise(registrationMutation.mutateAsync(formData), {
       loading: "Registering...",
-      success: "Registration successful! Please log in.",
+      success: () => (
+        <div>
+          <p>Registration successful!</p>
+          <p>An email with your password has been sent to your inbox.</p>
+          <p>
+            If you do not receive the email, please wait some time and then use
+            the
+            <Link to="/forgot-password" className="text-blue-500 underline">
+              'Forgot Password'
+            </Link>
+            option to reset your password.
+          </p>
+        </div>
+      ),
+
       error: (error: AxiosError<ErrorResponse>) =>
         error.response?.data?.message || "Registration failed!",
     });
@@ -68,7 +77,12 @@ const Registration: React.FC = () => {
   return (
     <main className="flex-1 flex items-center justify-center my-6">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-6 text-[#1F3D7A]">Register</h1>
+        <h1 className="text-3xl font-bold  text-[#1F3D7A]">
+          Create admin account
+        </h1>
+        <p className="text-sm mb-4 text-gray-600">
+          If you want to organize an election, please create an admin account.
+        </p>
         <form className="space-y-4" onSubmit={handleSubmit(handleRegistration)}>
           <div>
             <label htmlFor="name" className="block font-medium mb-1">
@@ -110,7 +124,7 @@ const Registration: React.FC = () => {
             </label>
             <Input
               id="student-id"
-              {...register("studentId", { required: true })}
+              {...register("studentId", { required: false })}
               type="text"
               placeholder="F23010101"
               className="w-full rounded-full bg-[#E1ECF4] px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-800"
@@ -121,45 +135,6 @@ const Registration: React.FC = () => {
               </p>
             )}
           </div>
-          <div>
-            <label htmlFor="password" className="block font-medium mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <Input
-                id="password"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters long",
-                  },
-                })}
-                type={showPassword ? "text" : "password"}
-                placeholder="********"
-                className="w-full rounded-full bg-[#E1ECF4] px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-800"
-              />
-              {errors.password && (
-                <p role="alert" className="text-red-400 text-[14px] mt-3">
-                  {errors.password.message}
-                </p>
-              )}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={handleTogglePasswordVisibility}
-              >
-                {showPassword ? (
-                  <EyeOffIcon className="h-4 w-4 text-indigo-600" />
-                ) : (
-                  <EyeIcon className="h-4 w-4 text-indigo-600" />
-                )}
-              </Button>
-            </div>
-          </div>
-
           <div>
             <label htmlFor="photo" className="block font-medium mb-1">
               Photo
@@ -192,7 +167,7 @@ const Registration: React.FC = () => {
             type="submit"
             className="w-full bg-gradient-to-r from-[#1F3D7A] to-[#2a4e9b] hover:from-[#2a4e9b] hover:to-[#1F3D7A] text-white rounded-full py-2 transition-colors"
           >
-            Register
+            create account
           </Button>
           <div className="text-center text-sm text-[#1F3D7A]">
             Already have an account?{" "}
@@ -206,4 +181,4 @@ const Registration: React.FC = () => {
   );
 };
 
-export default Registration;
+export default CreateAdminAccount;

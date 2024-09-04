@@ -3,8 +3,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { User } from "lucide-react";
 import { TUserData } from "@/types/User";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import LoadingComponent from "@/utils/LoadingComponent";
 
 const CreatorCard = ({ creator }: { creator: Partial<TUserData> }) => {
+  const { user, isLoading } = useUserInfo();
+  if (isLoading) {
+    return <LoadingComponent />;
+  }
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -17,13 +23,15 @@ const CreatorCard = ({ creator }: { creator: Partial<TUserData> }) => {
           <p className="text-gray-500">{creator.email}</p>
         </div>
       </div>
-      <Link
-        to={`/admin-dashboard/user-management/user-details/${creator.email}`}
-      >
-        <Button size="sm" variant="ghost" className="hover:bg-gray-200">
-          Details <User className="w-4 h-4 ml-2" />
-        </Button>
-      </Link>
+      {user?.role === "superAdmin" && (
+        <Link
+          to={`/admin-dashboard/user-management/user-details/${creator.email}`}
+        >
+          <Button size="sm" variant="ghost" className="hover:bg-gray-200">
+            Details <User className="w-4 h-4 ml-2" />
+          </Button>
+        </Link>
+      )}
     </div>
   );
 };

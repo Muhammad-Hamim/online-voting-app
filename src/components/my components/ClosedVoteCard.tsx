@@ -17,6 +17,7 @@ interface ClosedVoteCardProps {
   id: string;
   title: string;
   description: string;
+  status:string;
   winner?: ICandidate;
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setPositionId: React.Dispatch<React.SetStateAction<string | null>>;
@@ -26,6 +27,7 @@ const ClosedVoteCard: React.FC<ClosedVoteCardProps> = ({
   id,
   title,
   description,
+  status,
   winner,
   setIsDialogOpen,
   setPositionId,

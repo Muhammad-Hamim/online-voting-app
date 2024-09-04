@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -9,9 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAllPositions } from "@/hooks/usePositions";
-import { TCandidate } from "@/types/candidates";
-
-import { motion } from "framer-motion";
 import { useGetCandidates } from "@/hooks/useCandidates";
 import { CirclesWithBar } from "react-loader-spinner";
 import { useUserInfo } from "@/hooks/useUserInfo";
@@ -35,6 +33,7 @@ import {
 } from "@/components/ui/card";
 import { CheckCircle, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TCandidate } from "@/types/candidates";
 
 const LiveVotes = () => {
   const { user, isLoading: isUserLoading } = useUserInfo();
@@ -94,112 +93,135 @@ const LiveVotes = () => {
     isPositionPending ||
     isUserLoading
   ) {
-    return (
-      <div className="absolute w-fit h-fit top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <CirclesWithBar
-          height="80"
-          width="80"
-          color="#4fa94d"
-          outerCircleColor="#4fa94d"
-          innerCircleColor="#4fa94d"
-          barColor="#4fa94d"
-          ariaLabel="circles-with-bar-loading"
-          visible={true}
-        />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   const { livePositions, notStartedOrExpiredPositions } =
     sortAndCategorizePositions((positions as TPosition[] & IPosition[]) || []);
 
   return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-        {livePositions.length > 0 ? (
-          livePositions.map((position) => (
-            <LiveVoteCard
-              key={position._id}
-              id={position?._id as string}
-              title={position?.title as string}
-              description={position?.description as string}
-              startTime={position?.startTime as string}
-              endTime={position?.endTime as string}
-              status={position?.status as string}
-              setIsDialogOpen={setIsDialogOpen}
-            />
-          ))
-        ) : (
-          <p>No live positions available.</p>
-        )}
-        {notStartedOrExpiredPositions.length > 0 ? (
-          notStartedOrExpiredPositions.map((position) => (
-            <LiveVoteCard
-              key={position._id}
-              id={position?._id as string}
-              title={position?.title as string}
-              description={position?.description as string}
-              startTime={position?.startTime as string}
-              endTime={position?.endTime as string}
-              status={position?.status as string}
-              setIsDialogOpen={setIsDialogOpen}
-            />
-          ))
-        ) : (
-          <p>No positions available.</p>
-        )}
-      </div>
+    <div className="container mx-auto px-4 py-4 md:py-8">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-2xl md:text-4xl font-bold text-center mb-4 md:mb-8 text-gray-800"
+      >
+        Live Voting Dashboard
+      </motion.h1>
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5"
+        >
+          {livePositions.length > 0 ? (
+            livePositions.map((position) => (
+              <motion.div
+                key={position._id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+              >
+                <LiveVoteCard
+                  id={position?._id as string}
+                  title={position?.title as string}
+                  description={position?.description as string}
+                  startTime={position?.startTime as string}
+                  endTime={position?.endTime as string}
+                  status={position?.status as string}
+                  setIsDialogOpen={setIsDialogOpen}
+                />
+              </motion.div>
+            ))
+          ) : (
+            <p className="text-center col-span-full text-gray-500">
+              No live positions available.
+            </p>
+          )}
+          {notStartedOrExpiredPositions.length > 0 && (
+            <>
+              <div className="col-span-full mt-6 md:mt-8 mb-2 md:mb-4">
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-700">
+                  Upcoming and Past Positions
+                </h2>
+              </div>
+              {notStartedOrExpiredPositions.map((position) => (
+                <motion.div
+                  key={position._id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <LiveVoteCard
+                    id={position?._id as string}
+                    title={position?.title as string}
+                    description={position?.description as string}
+                    startTime={position?.startTime as string}
+                    endTime={position?.endTime as string}
+                    status={position?.status as string}
+                    setIsDialogOpen={setIsDialogOpen}
+                  />
+                </motion.div>
+              ))}
+            </>
+          )}
+        </motion.div>
+      </AnimatePresence>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[80vh] p-0 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl">
-          <DialogHeader className="p-6 bg-white bg-opacity-70 backdrop-blur-sm">
-            <DialogTitle className="text-3xl font-extrabold text-gray-800">
+        <DialogContent className="sm:max-w-[90vw] md:max-w-[550px] max-h-[90vh] p-0 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl">
+          <DialogHeader className="p-4 md:p-6 bg-white bg-opacity-70 backdrop-blur-sm">
+            <DialogTitle className="text-xl md:text-3xl font-extrabold text-gray-800">
               Choose Your Candidate
             </DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogDescription className="text-sm md:text-base text-gray-600">
               Select the candidate you believe will best represent this
               position.
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="max-h-[50vh] p-6">
-            <div className="space-y-4">
+          <ScrollArea className="max-h-[50vh] p-4 md:p-6">
+            <div className="space-y-3 md:space-y-4 pb-2">
               {candidates && candidates.length > 0 ? (
-                candidates.map((candidate: TCandidate) => (
+                candidates.map((candidate) => (
                   <CandidateCard
                     key={candidate._id}
                     candidate={candidate}
                     isSelected={selectedCandidate === candidate._id}
-                    onSelect={() => setSelectedCandidate(candidate._id)}
+                    onSelect={() => setSelectedCandidate(candidate?._id)}
                   />
                 ))
               ) : (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center text-gray-500 py-4 md:py-8">
                   No candidates available at this time.
                 </p>
               )}
             </div>
           </ScrollArea>
-          <DialogFooter className="p-6 bg-white bg-opacity-70 backdrop-blur-sm">
+          <DialogFooter className="p-4 md:p-6 bg-white bg-opacity-70 backdrop-blur-sm">
             <Button
               onClick={handleVote}
-              className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-full transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl text-lg"
+              className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 md:py-4 rounded-full transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl text-base md:text-lg"
               disabled={!selectedCandidate}
-            >
-              Confirm Vote
+            >Confirm Vote
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 };
 
-export default LiveVotes;
-
-const CandidateCard: React.FC<{
+const CandidateCard = ({
+  candidate,
+  isSelected,
+  onSelect,
+}: {
   candidate: TCandidate;
   isSelected: boolean;
   onSelect: () => void;
-}> = ({ candidate, isSelected, onSelect }) => (
+}) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -214,34 +236,51 @@ const CandidateCard: React.FC<{
       onClick={onSelect}
     >
       <CardHeader className="pb-2">
-        <div className="flex items-center space-x-4">
-          <Avatar className="w-16 h-16 border-2 border-gray-200">
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <Avatar className="w-12 h-12 md:w-16 md:h-16 border-2 border-gray-200">
             <AvatarImage
               src={candidate?.candidate?.photo}
               alt={candidate?.candidate?.name}
             />
             <AvatarFallback>
-              <User className="w-8 h-8 text-gray-400" />
+              <User className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
             </AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle className="text-xl font-bold text-gray-800">
+            <CardTitle className="text-base md:text-xl font-bold text-gray-800">
               {candidate?.candidate?.name}
             </CardTitle>
-            <CardDescription className="text-sm text-gray-500">
+            <CardDescription className="text-xs md:text-sm text-gray-500">
               {candidate.email}
             </CardDescription>
           </div>
           {isSelected && (
-            <CheckCircle className="w-6 h-6 text-gray-500 ml-auto" />
+            <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-gray-500 ml-auto" />
           )}
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-600 italic">
+        <p className="text-xs md:text-sm text-gray-600 italic">
           &ldquo;{candidate.message}&rdquo;
         </p>
       </CardContent>
     </Card>
   </motion.div>
 );
+
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center h-screen">
+    <CirclesWithBar
+      height="60"
+      width="60"
+      color="#4fa94d"
+      outerCircleColor="#4fa94d"
+      innerCircleColor="#4fa94d"
+      barColor="#4fa94d"
+      ariaLabel="circles-with-bar-loading"
+      visible={true}
+    />
+  </div>
+);
+
+export default LiveVotes;

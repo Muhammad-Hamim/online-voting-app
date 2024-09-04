@@ -83,7 +83,7 @@ const ApplicationCard = ({ application, refetch }: ApplicationCardProps) => {
   };
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white dark:bg-gray-800 border-none">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white dark:bg-gray-800 border-none rounded-xl">
       <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">{positionDetails.title}</h2>
@@ -95,12 +95,12 @@ const ApplicationCard = ({ application, refetch }: ApplicationCardProps) => {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="p-6">
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+      <CardContent className="p-6 space-y-6">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           {positionDetails.description}
         </p>
 
-        <div className="flex items-center mb-6 space-x-4">
+        <div className="flex items-center space-x-4">
           <Avatar className="h-12 w-12">
             <AvatarImage src={creator.photo} alt={creator.name} />
             <AvatarFallback>{creator?.name}</AvatarFallback>
@@ -115,63 +115,56 @@ const ApplicationCard = ({ application, refetch }: ApplicationCardProps) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="flex items-center text-sm bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
-            <Calendar className="text-indigo-500 mr-2 w-5 h-5" />
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Applied
-              </p>
-              <p className="font-medium text-gray-800 dark:text-gray-200">
-                {format(new Date(createdAt as string), "MMM d, yyyy")}
-              </p>
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            {
+              icon: Calendar,
+              label: "Applied",
+              value: format(new Date(createdAt as string), "MMM d, yyyy"),
+            },
+            {
+              icon: Briefcase,
+              label: "Created",
+              value: format(
+                new Date(positionDetails.createdAt as string),
+                "MMM d, yyyy"
+              ),
+            },
+            {
+              icon: Clock,
+              label: "Start Date",
+              value: format(
+                new Date(positionDetails?.startTime as string),
+                "MMM d, yyyy"
+              ),
+            },
+            {
+              icon: Clock,
+              label: "End Date",
+              value: format(
+                new Date(positionDetails?.endTime as string),
+                "MMM d, yyyy"
+              ),
+            },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className="flex items-center text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-lg"
+            >
+              <item.icon className="text-indigo-500 mr-2 w-5 h-5" />
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {item.label}
+                </p>
+                <p className="font-medium text-gray-800 dark:text-gray-200">
+                  {item.value}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center text-sm bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
-            <Briefcase className="text-indigo-500 mr-2 w-5 h-5" />
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Created
-              </p>
-              <p className="font-medium text-gray-800 dark:text-gray-200">
-                {format(
-                  new Date(positionDetails.createdAt as string),
-                  "MMM d, yyyy"
-                )}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center text-sm bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
-            <Clock className="text-indigo-500 mr-2 w-5 h-5" />
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Start Date
-              </p>
-              <p className="font-medium text-gray-800 dark:text-gray-200">
-                {format(
-                  new Date(positionDetails?.startTime as string),
-                  "MMM d, yyyy"
-                )}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center text-sm bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
-            <Clock className="text-indigo-500 mr-2 w-5 h-5" />
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                End Date
-              </p>
-              <p className="font-medium text-gray-800 dark:text-gray-200">
-                {format(
-                  new Date(positionDetails?.endTime as string),
-                  "MMM d, yyyy"
-                )}
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
 
-        <div className="flex items-center justify-between mb-6 bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
           <div className="flex items-center">
             {statusIcons[status]}
             <span className="ml-2 font-semibold capitalize text-gray-800 dark:text-gray-200">
@@ -187,7 +180,7 @@ const ApplicationCard = ({ application, refetch }: ApplicationCardProps) => {
           </Button>
         </div>
 
-        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
               {message ? "Your Message" : "No Message"}

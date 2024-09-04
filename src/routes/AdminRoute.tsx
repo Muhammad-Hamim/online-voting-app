@@ -30,13 +30,10 @@ const AdminRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     );
   }
 
-  if (!user) {
+  if (!user || user.role === "user") {
     return <Navigate to={"/"} state={pathname} />;
   }
-  if (user.role !== "admin") {
-    return <Navigate to={"/"} state={pathname} />;
-  }
-  if (user.role === "admin") {
+  if (user.role === "superAdmin" || user.role === "admin") {
     return children;
   }
 

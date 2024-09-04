@@ -20,6 +20,8 @@ import {
 import { Link } from "react-router-dom";
 import { ICandidate } from "@/types/positions";
 import { useUpdateCandidateStatus } from "@/hooks/useCandidates";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import LoadingComponent from "@/utils/LoadingComponent";
 
 const MPCandidateCard = ({
   candidate,
@@ -28,6 +30,7 @@ const MPCandidateCard = ({
   candidate: ICandidate;
   positionStatus: string;
 }) => {
+  const { user, isLoading } = useUserInfo();
   const { updateCandidateStatus } = useUpdateCandidateStatus();
 
   if (!candidate) {
@@ -40,7 +43,9 @@ const MPCandidateCard = ({
   const handleUpdateStatus = (id: string, status: string) => {
     updateCandidateStatus.mutate({ id, status });
   };
-
+  if (isLoading) {
+    return <LoadingComponent />;
+  }
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white shadow rounded-lg hover:shadow-md transition-shadow duration-300">
       <div className="flex items-center space-x-4 mb-4 sm:mb-0">
@@ -116,13 +121,15 @@ const MPCandidateCard = ({
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link
-                  to={`/admin-dashboard/user-management/user-details/${candidate.email}`}
-                >
-                  <Button size="sm" variant="ghost">
-                    Details <User className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
+                {user?.role === "superAdmin" && (
+                  <Link
+                    to={`/admin-dashboard/user-management/user-details/${candidate.email}`}
+                  >
+                    <Button size="sm" variant="ghost">
+                      Details <User className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                )}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

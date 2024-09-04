@@ -9,12 +9,20 @@ const Navbar: React.FC = () => {
           <span className="text-lg font-semibold">Voting App</span>
         </div>
       </Link>
-      <Link
-        to={"/admin-login"}
-        className="bg-white text-[#1F3D7A] hover:bg-[#2a4e9b] hover:text-white px-4 py-2 rounded-full transition-colors"
-      >
-        Admin Login
-      </Link>
+      <div className="flex gap-4">
+        <Link
+          to={"/registration"}
+          className="bg-white text-[#1F3D7A] hover:bg-[#2a4e9b] hover:text-white px-4 py-2 rounded-full transition-colors"
+        >
+          Register
+        </Link>
+        <Link
+          to={"/create-admin"}
+          className="text-white bg-[#1f3d7ac0] hover:text-[#2a4e9b] hover:bg-white px-4 py-2 rounded-full transition-colors"
+        >
+          Admin Account
+        </Link>
+      </div>
     </header>
   );
 };

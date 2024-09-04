@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { useAllPositions } from "@/hooks/usePositions";
 import { IPosition, TPosition } from "@/types/positions";
-
-import ManagePositionsCard from "@/components/my components/ManagePositionsCard";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
-
+import LoadingComponent from "@/utils/LoadingComponent";
+const LazyManagePositionsCard = lazy(
+  () => import("@/components/my components/ManagePositionsCard")
+);
 const PositionStats = ({
   positions,
 }: {
@@ -64,7 +65,7 @@ const ManagePositions = () => {
       setIsSearching(true);
       const timer = setTimeout(() => {
         refetch().then(() => setIsSearching(false));
-      }, 500);
+      }, 100);
       return () => clearTimeout(timer);
     } else {
       refetch();
@@ -75,7 +76,9 @@ const ManagePositions = () => {
   const onSearchSubmit: SubmitHandler<TSearchInput> = (data) => {
     setSearchTerm(data?.searchTerm);
   };
-
+  if (isLoading) {
+    return <LoadingComponent />;
+  }
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-8">
       <div className="bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-6 rounded-lg shadow-lg">
@@ -140,7 +143,10 @@ const ManagePositions = () => {
         ) : (
           ["all", "live", "pending", "terminated", "closed"].map((status) => (
             <TabsContent key={status} value={status}>
-              <div className="grid gap-6 md:grid-cols-2 xxl:grid-cols-3">
+              <div
+                key={status}
+                className="grid gap-6 md:grid-cols-2 xxl:grid-cols-3"
+              >
                 {positions
                   ?.filter(
                     (position) => status === "all" || position.status === status
@@ -148,10 +154,18 @@ const ManagePositions = () => {
                   ?.map((position) => {
                     return (
                       <>
-                        <ManagePositionsCard
+                        <Suspense
                           key={position._id}
-                          position={position as TPosition & IPosition}
-                        />
+                          fallback={
+                            <div className="h-64 flex items-center justify-center">
+                              <Loader2 className="animate-spin" />
+                            </div>
+                          }
+                        >
+                          <LazyManagePositionsCard
+                            position={position as TPosition & IPosition}
+                          />
+                        </Suspense>
                       </>
                     );
                   })}

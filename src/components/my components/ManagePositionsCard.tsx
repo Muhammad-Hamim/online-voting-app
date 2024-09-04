@@ -196,8 +196,8 @@ const ManagePositionsCard = ({
               </TabsTrigger>
             </TabsList>
             {["all", "approved", "pending", "rejected"].map(
-              (candidateStatus, index) => (
-                <TabsContent key={index} value={candidateStatus}>
+              (candidateStatus) => (
+                <TabsContent key={candidateStatus} value={candidateStatus}>
                   <div className="space-y-2 max-h-64 pb-4 overflow-y-auto">
                     {position?.candidates
                       .filter(
@@ -207,7 +207,7 @@ const ManagePositionsCard = ({
                       )
                       .map((candidate) => (
                         <MPCandidateCard
-                          key={candidate._id}
+                          key={candidateStatus}
                           candidate={candidate as ICandidate}
                           positionStatus={position?.status}
                         />

@@ -12,7 +12,6 @@ import { createBrowserRouter } from "react-router-dom";
 import Profile from "@/pages/user dashboard/Profile";
 import PrivateRoute from "./PrivateRoute";
 import VotingHistory from "@/pages/user dashboard/VotingHistory";
-import AdminLogin from "@/pages/Login&Registration/AdminLogin";
 import UserManagement from "@/pages/admin dashboard/UserManagement";
 import AdminLiveVotes from "@/pages/admin dashboard/AdminLiveVotes";
 import VoteDetails from "@/pages/admin dashboard/VoteDetails";
@@ -21,6 +20,8 @@ import CreatePosition from "@/pages/admin dashboard/CreatePosition";
 import ManagePositions from "@/pages/admin dashboard/ManagePositions";
 import AdminRoute from "./AdminRoute";
 import MyAppliedPositions from "@/pages/user dashboard/MyAppliedPositions";
+import SuperAdminRoute from "./SuperAdminRoute";
+import CreateAdminAccount from "@/pages/Login&Registration/CreateAdminAccount";
 
 const router = createBrowserRouter([
   {
@@ -45,8 +46,8 @@ const router = createBrowserRouter([
         element: <ResetPassword />,
       },
       {
-        path: "admin-login",
-        element: <AdminLogin />,
+        path: "create-admin",
+        element: <CreateAdminAccount />,
       },
     ],
   },
@@ -130,17 +131,17 @@ const router = createBrowserRouter([
       {
         path: "user-management",
         element: (
-          <AdminRoute>
+          <SuperAdminRoute>
             <UserManagement />
-          </AdminRoute>
+          </SuperAdminRoute>
         ),
       },
       {
         path: "user-management/user-details/:email",
         element: (
-          <AdminRoute>
+          <SuperAdminRoute>
             <UserDetails />
-          </AdminRoute>
+          </SuperAdminRoute>
         ),
       },
       {

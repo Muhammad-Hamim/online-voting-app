@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { TUserData } from "@/types/User";
 import useAxiosSecure from "./useAxiosSecure";
 import toast from "react-hot-toast";
+import { AxiosError } from "axios";
 
 const useUserInfo = () => {
   const [axiosSecure] = useAxiosSecure();
@@ -19,8 +20,14 @@ const useUserInfo = () => {
       try {
         const response = await axiosSecure.get("/users/me");
         return response.data.data;
-      } catch (error) {
-        toast.error("Error loading user information.");
+      } catch (error: unknown) {
+        if (error instanceof AxiosError) {
+          toast.error(
+            error.response?.data?.message || "Error loading user information."
+          );
+        } else {
+          toast.error("An unexpected error occurred.");
+        }
         throw error;
       }
     },
@@ -114,10 +121,5 @@ const useGetSingleUser = (email: string) => {
     refetch,
   };
 };
-
-
-
-
-
 
 export { useUserInfo, useGetAllUser, useGetSingleUser };

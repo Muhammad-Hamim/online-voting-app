@@ -1,35 +1,27 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import axiosInstance from "@/api/axiosInstance";
-import { ErrorResponse } from "@/types/positions";
 import { AxiosError } from "axios";
+import { ErrorResponse } from "@/types/positions";
+import useLogin from "@/hooks/useLogin";
 
 type Inputs = { email: string; password: string };
 
 const Login = () => {
-  const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false); // Toggle state
   const {
     register,
     formState: { errors },
     handleSubmit,
   } = useForm<Inputs>();
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: Inputs) => {
-      const response = await axiosInstance.post("/auth/login", data);
-      const token = response.data.data.accessToken;
-      localStorage.setItem("token", token);
-      return response.data;
-    },
-    onSuccess: () => {
-      navigate("/dashboard"); // Replace with your dashboard route
-    },
-  });
+  const loginMutation = useLogin(
+    isAdmin ? "/auth/admin-login" : "/auth/login", // Toggle API endpoint
+    "/dashboard"
+  );
 
   const handleLogin: SubmitHandler<Inputs> = (data) => {
     toast.promise(loginMutation.mutateAsync(data), {
@@ -41,9 +33,11 @@ const Login = () => {
   };
 
   return (
-    <main className="flex-1 flex items-center justify-center">
+    <main className="flex-1 flex items-center justify-center my-6">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-6 text-[#1F3D7A]">Login</h1>
+        <h1 className="text-3xl font-bold mb-6 text-[#1F3D7A]">
+          {isAdmin ? "Admin Login" : "Login"}
+        </h1>
         <form className="space-y-4" onSubmit={handleSubmit(handleLogin)}>
           <div>
             <label htmlFor="email" className="block font-medium mb-1">
@@ -93,13 +87,15 @@ const Login = () => {
           >
             Login
           </Button>
-          <div className="text-center text-sm text-[#1F3D7A]">
-            Don't have an account?{" "}
-            <Link to={"/registration"} className="font-medium hover:underline">
-              Register here
-            </Link>
-          </div>
         </form>
+        <div className="text-center text-sm text-[#1F3D7A] mt-4">
+          <button
+            onClick={() => setIsAdmin(!isAdmin)}
+            className="font-medium hover:underline focus:outline-none"
+          >
+            {isAdmin ? "Login as User" : "Login as Admin"}
+          </button>
+        </div>
       </div>
     </main>
   );

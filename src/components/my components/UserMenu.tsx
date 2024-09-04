@@ -1,15 +1,10 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, LogOutIcon } from "lucide-react";
-import {
-  FaVoteYea,
-  FaHistory,
-  FaUserAltSlash,
-  FaFileAlt,
-} from "react-icons/fa";
+import { ChevronDown, LogOutIcon, Settings } from "lucide-react";
+import { FaVoteYea, FaHistory, FaFileAlt, FaUserFriends } from "react-icons/fa";
 import { GiPodiumWinner } from "react-icons/gi";
 import { RiProfileFill } from "react-icons/ri";
-import { MdOutlineArchive } from "react-icons/md";
+import { MdAddTask, MdOutlineArchive } from "react-icons/md";
 import { GrRadialSelected } from "react-icons/gr";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -75,7 +70,6 @@ const menuItems: Record<string, MenuItem[]> = {
       icon: RiProfileFill,
       label: "Profile",
     },
-
     {
       icon: FaVoteYea,
       label: "Votes",
@@ -98,22 +92,22 @@ const menuItems: Record<string, MenuItem[]> = {
       subMenu: [
         {
           to: "/admin-dashboard/positions/create-position",
-          icon: GrRadialSelected,
+          icon: MdAddTask,
           label: "Create Position",
         },
         {
           to: "/admin-dashboard/positions/manage-positions",
-          icon: GrRadialSelected,
+          icon: Settings,
           label: "Manage Positions",
         },
       ],
     },
-    {
-      icon: FaUserAltSlash,
-      label: "user management",
-      to: "/admin-dashboard/user-management",
-    },
   ],
+};
+const userManagementItem = {
+  icon: FaUserFriends,
+  label: "User Management",
+  to: "/admin-dashboard/user-management",
 };
 
 const UserMenu: React.FC = () => {
@@ -137,9 +131,16 @@ const UserMenu: React.FC = () => {
       console.error("Logout failed", error);
     }
   };
+  // Filter menu items based on the user role
+  let currentMenuItems =
+    user?.role === "admin" || user?.role === "superAdmin"
+      ? [...menuItems.admin]
+      : [...menuItems.user];
 
-  const currentMenuItems =
-    user?.role === "admin" ? menuItems.admin : menuItems.user;
+  if (user?.role === "superAdmin") {
+    // Create a new array including the user management item
+    currentMenuItems = [...currentMenuItems, userManagementItem];
+  }
 
   return (
     <aside
