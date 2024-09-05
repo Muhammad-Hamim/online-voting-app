@@ -32,9 +32,11 @@ import {
 import { CirclesWithBar } from "react-loader-spinner";
 import { TUserData } from "@/types/User";
 import { ICandidate } from "@/types/positions";
+import { useUserInfo } from "@/hooks/useUserInfo";
 // Define types for voteData and related data
 
 const VoteDetails: React.FC = () => {
+  const { user } = useUserInfo();
   const { positions, refetch, isLoading } = useAllPositions("");
   const { positionId } = useParams<{ positionId: string }>();
   const [activeTab, setActiveTab] = useState<string>("overview");
@@ -93,14 +95,16 @@ const VoteDetails: React.FC = () => {
             <p className="text-sm opacity-75">{creator.email}</p>
           </div>
         </div>
-        <Link
-          to={`/admin-dashboard/user-management/user-details/${creator?.email}`}
-          className="block mt-4"
-        >
-          <Button variant="secondary" className="w-full">
-            See Full Details
-          </Button>
-        </Link>
+        {user?.role === "superAdmin" && (
+          <Link
+            to={`/admin-dashboard/user-management/user-details/${creator?.email}`}
+            className="block mt-4"
+          >
+            <Button variant="secondary" className="w-full">
+              See Full Details
+            </Button>
+          </Link>
+        )}
       </CardContent>
     </Card>
   );
@@ -139,11 +143,13 @@ const VoteDetails: React.FC = () => {
           </p>
         </div>
         <div className="mt-4 flex justify-between items-center">
-          <Link
-            to={`/admin-dashboard/user-management/user-details/${candidate.email}`}
-          >
-            <Button variant="outline">See Details</Button>
-          </Link>
+          {user?.role === "superAdmin" && (
+            <Link
+              to={`/admin-dashboard/user-management/user-details/${candidate.email}`}
+            >
+              <Button variant="outline">See Details</Button>
+            </Link>
+          )}
           <Button
             variant="ghost"
             onClick={() =>
@@ -209,14 +215,16 @@ const VoteDetails: React.FC = () => {
             </TooltipContent>
           </TooltipSd>
         </TooltipProvider>
-        <Link
-          to={`/admin-dashboard/user-management/user-details/${voter.email}`}
-          className="block mt-2"
-        >
-          <Button variant="outline" size="sm" className="w-full">
-            See Details
-          </Button>
-        </Link>
+        {user?.role === "superAdmin" && (
+          <Link
+            to={`/admin-dashboard/user-management/user-details/${voter.email}`}
+            className="block mt-2"
+          >
+            <Button variant="outline" size="sm" className="w-full">
+              See Details
+            </Button>
+          </Link>
+        )}
       </CardContent>
     </Card>
   );

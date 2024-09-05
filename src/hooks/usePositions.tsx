@@ -93,7 +93,6 @@ const useUpdatePositionStatus = () => {
   };
 };
 
-// General hook to get positions with optional filters
 const usePositions = (endpoint: string, queryKey: string) => {
   const { user } = useUserInfo();
   const [axiosSecure] = useAxiosSecure();
@@ -108,9 +107,9 @@ const usePositions = (endpoint: string, queryKey: string) => {
   } = useQuery<IPosition[] & TPosition[]>({
     queryKey: [queryKey],
     queryFn: () => fetchPositions(axiosSecure, endpoint),
-    enabled: !!user,
-    retry: false,
-    staleTime: 0, // Data will be considered stale immediately
+    enabled: !!user, // Only enable the query if the user is logged in and has an ID
+    staleTime: 1000 * 60 * 5, // Consider data stale after 5 minutes
+    retry: true, // Allow the query to retry if it fails
   });
 
   return {

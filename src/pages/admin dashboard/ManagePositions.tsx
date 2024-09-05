@@ -8,6 +8,7 @@ import { IPosition, TPosition } from "@/types/positions";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import LoadingComponent from "@/utils/LoadingComponent";
+import { debounce } from "lodash";
 const LazyManagePositionsCard = lazy(
   () => import("@/components/my components/ManagePositionsCard")
 );
@@ -55,27 +56,25 @@ type TSearchInput = {
 
 const ManagePositions = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [isSearching, setIsSearching] = useState(false);
   const { positions, isLoading, refetch } = useAllPositions(searchTerm);
 
   const { register, handleSubmit } = useForm<TSearchInput>();
 
+  // Debounce refetch function
   useEffect(() => {
-    if (searchTerm) {
-      setIsSearching(true);
-      const timer = setTimeout(() => {
-        refetch().then(() => setIsSearching(false));
-      }, 100);
-      return () => clearTimeout(timer);
-    } else {
+    const debouncedRefetch = debounce(() => {
       refetch();
-      setIsSearching(false);
-    }
+    }, 500);
+    debouncedRefetch();
+    return () => {
+      debouncedRefetch.cancel();
+    };
   }, [searchTerm, refetch]);
 
-  const onSearchSubmit: SubmitHandler<TSearchInput> = (data) => {
-    setSearchTerm(data?.searchTerm);
+  const onSearchSubmit: SubmitHandler<{ searchTerm: string }> = (data) => {
+    setSearchTerm(data.searchTerm);
   };
+
   if (isLoading) {
     return <LoadingComponent />;
   }
@@ -108,21 +107,17 @@ const ManagePositions = () => {
               type="submit"
               className="absolute inset-y-0 left-0 pl-3 flex items-center"
             >
-              {isSearching ? (
-                <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
-              ) : (
-                <svg
-                  className="h-5 w-5 text-gray-400"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-              )}
+              <svg
+                className="h-5 w-5 text-gray-400"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
             </button>
           </div>
         </form>

@@ -36,9 +36,9 @@ const useAxiosSecure = () => {
           !originalRequest._retry
         ) {
           originalRequest._retry = true;
-          const hasRefreshToken = document.cookie.includes("refreshToken");
+          const hasRefreshToken = document?.cookie?.includes("refreshToken");
+
           const token = localStorage.getItem("token");
-          console.log(hasRefreshToken);
           if (token && !hasRefreshToken) {
             // Remove the access token and log the user out
             localStorage.removeItem("token");

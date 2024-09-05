@@ -58,7 +58,7 @@ const UserManagement = () => {
   // Debounce refetch function
   const debouncedRefetch = debounce(() => {
     refetch();
-  }, 5000);
+  }, 500);
 
   const onSearchSubmit: SubmitHandler<{ searchTerm: string }> = (data) => {
     setSearchTerm(data.searchTerm);
